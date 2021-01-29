@@ -118,7 +118,7 @@ if __name__ == "__main__":
     # Training
     env_player.play_against(
         env_algorithm=dqn_training,
-        opponent=opponent,
+        opponent=second_opponent,
         env_algorithm_kwargs={"dqn": dqn, "nb_steps": NB_TRAINING_STEPS},
     )
     model.save("model_%d" % NB_TRAINING_STEPS)
