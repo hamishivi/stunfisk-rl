@@ -2,3 +2,4 @@
 .vscode
 __pycache__
 model_10000
+venv/

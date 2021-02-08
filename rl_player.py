@@ -1,8 +1,9 @@
 import numpy as np
 import tensorflow as tf
-
+from gym import spaces
 from poke_env.player.env_player import Gen8EnvSinglePlayer
 from poke_env.player.random_player import RandomPlayer
+from poke_env.player.player import Player
 from rl.agents.dqn import DQNAgent
 from rl.policy import LinearAnnealedPolicy, EpsGreedyQPolicy
 from rl.memory import SequentialMemory
@@ -13,6 +14,22 @@ from tensorflow.keras.optimizers import Adam
 from max_player import MaxDamagePlayer
 
 class SimpleRLPlayer(Gen8EnvSinglePlayer):
+    def __init__(self, *args, **kwargs):
+        # init all the parent stuff
+        super().__init__(*args, **kwargs)
+        # define observation space, which is based on embed_battle
+        self.observation_space = spaces.Box(
+            low=np.array([-1, -1, -1, -1, 0, 0, 0, 0, 0, 0]),
+            high=np.array([25, 25, 25, 25, 5, 5, 5, 5, 6, 6]),
+            shape=(10,)
+        )
+        self.action_box = spaces.Discrete(super().action_space[-1])
+        self.cur_bat = None
+
+    @property
+    def action_space(self):
+        return self.action_box
+        
     def embed_battle(self, battle):
         # -1 indicates that the move does not have a base power
         # or is not available
@@ -44,6 +61,19 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
             hp_value=1,
             victory_value=30,
         )
+
+# for playing against users
+class EvaluatePlayer(Player):
+    def __init__(self, player, model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.env_player = player
+        self.model = model
+
+    def choose_move(self, battle):
+        obs = self.env_player.embed_battle(battle)
+        action, _ = self.model.predict(obs.reshape(1, -1), deterministic=True)
+        return self.env_player._action_to_move(action[0], battle)
+
 
 NB_TRAINING_STEPS = 10000
 NB_EVALUATION_EPISODES = 100
