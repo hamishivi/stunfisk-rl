@@ -11,7 +11,7 @@ from poke_env.player.random_player import RandomPlayer
 
 def test_algo(algo, algo_name, env_player, opponent, play_against=False):
     print(f'Training {algo_name}')
-    train(env_player, opponent, algo)
+    train(env_player, opponent, algo, timesteps=10000)
     print(f'Evaluating {algo_name}')
     win_perct = test(env_player, opponent, algo, algo_name=algo_name)
     if play_against:

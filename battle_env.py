@@ -9,7 +9,7 @@ from poke_env.player_configuration import PlayerConfiguration
 
 from max_player import MaxDamagePlayer
 
-def train(env_player, opponent, model, timesteps=100000):
+def train(env_player, opponent, model, timesteps=10000):
     def learn(player, model):
         model.learn(total_timesteps=timesteps)
     env_player.play_against(
@@ -36,7 +36,8 @@ async def play_human(env_player, model):
 
 
 if __name__ == '__main__':
-    env_player = SimpleRLPlayer(battle_format="gen8randombattle")
+    from config import cfg
+    env_player = SimpleRLPlayer(cfg, battle_format="gen8randombattle")
     opponent = MaxDamagePlayer(battle_format="gen8randombattle")
     model = DQN(
         MlpPolicy,
@@ -44,7 +45,11 @@ if __name__ == '__main__':
         learning_rate=0.00025,
         buffer_size=10000,
         learning_starts=1000,
-        gamma=0.5)
+        gamma=0.5,
+        verbose=1)
+    print('training')
     train(env_player, opponent, model)
-    test(env_player, opponent, model)
-    asyncio.get_event_loop().run_until_complete(play_human(env_player, model))
+    print('testing')
+    won = test(env_player, opponent, model)
+    print(f'In testing we won {won*100}% of matches')
+    #asyncio.get_event_loop().run_until_complete(play_human(env_player, model))
