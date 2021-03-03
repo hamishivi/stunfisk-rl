@@ -1,5 +1,6 @@
 .python-version
 .vscode
 __pycache__
-model_10000
+model_10*
 venv/
+wandb/

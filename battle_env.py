@@ -9,7 +9,7 @@ from poke_env.player_configuration import PlayerConfiguration
 
 from max_player import MaxDamagePlayer
 
-def train(env_player, opponent, model, timesteps=10000):
+def train(env_player, opponent, model, timesteps=100000):
     def learn(player, model):
         model.learn(total_timesteps=timesteps)
     env_player.play_against(

@@ -1,0 +1,106 @@
+program: wandb_sweep.py
+method: bayes
+metric:
+  name: avg_won
+  goal: maximize
+parameters:
+  BATTLE-MOVE-ACCURACY:
+    values:
+      - True
+      - False
+  BATTLE-MOVE-BASE_POWER:
+    values:
+      - True
+      - False
+  BATTLE-MOVE-MOVE_MULT:
+    values:
+      - True
+      - False
+  BATTLE-MOVE-PP:
+    values:
+      - True
+      - False
+  BATTLE-MOVE-PRIORITY:
+    values:
+      - True
+      - False
+  BATTLE-MOVE-CAT:
+    values:
+      - True
+      - False
+  BATTLE-MOVE-TYPE:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-ACTIVE:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-ATTACK:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-DEFENCE:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-SPECIAL_ATTACK:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-SPECIAL_DEFENCE:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-SPEED:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-HP:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-HP_FRACTION:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-FAINTED:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-GENDER:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-TYPE1:
+    values:
+      - True
+      - False
+  BATTLE-POKEMON-TYPE2:
+    values:
+      - True
+      - False
+  REWARD-FAINTED:
+    min: 0
+    max: 100  
+  REWARD-HP:
+    min: 0
+    max: 50
+  REWARD-VICTORY:
+    min: 0
+    max: 10000
+  DQN-LEARNING_RATE:
+    min: 0.0
+    max: 0.5
+  DQN-BUFFER_SIZE:
+    min: 10000
+    max: 1000000
+  DQN-LEARNING_STARTS:
+    min: 1000
+    max: 50000
+  DQN-GAMMA:
+    min: 0.5
+    max: 0.999
+  DQN-TRAIN_TIMESTEPS:
+    min: 1000
+    max: 100000

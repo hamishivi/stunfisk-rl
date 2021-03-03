@@ -1,4 +1,3 @@
-import numpy as np
 from gym import spaces
 from poke_env.player.env_player import Gen8EnvSinglePlayer
 from poke_env.player.random_player import RandomPlayer

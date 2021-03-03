@@ -167,3 +167,5 @@ class BattleConverter:
         if res.shape != (2, 924):
             import pdb; pdb.set_trace()
         return np.array([our_team, their_team])
+
+# todo: 'pokemon embedding' concept? i.e. model design.
