@@ -5,96 +5,58 @@ metric:
   goal: maximize
 parameters:
   BATTLE-MOVE-ACCURACY:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-MOVE-BASE_POWER:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-MOVE-MOVE_MULT:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-MOVE-PP:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-MOVE-PRIORITY:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-MOVE-CAT:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-MOVE-TYPE:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-ACTIVE:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-ATTACK:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-DEFENCE:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-SPECIAL_ATTACK:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-SPECIAL_DEFENCE:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-SPEED:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-HP:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-HP_FRACTION:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-FAINTED:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-GENDER:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-TYPE1:
-    values:
-      - True
-      - False
+    value: True
   BATTLE-POKEMON-TYPE2:
-    values:
-      - True
-      - False
+    value: True
   REWARD-FAINTED:
     min: 0
-    max: 100  
+    max: 100
   REWARD-HP:
     min: 0
     max: 50
   REWARD-VICTORY:
-    min: 0
+    min: 1
     max: 10000
   DQN-LEARNING_RATE:
     min: 0.0
     max: 0.5
   DQN-BUFFER_SIZE:
     min: 10000
-    max: 1000000
+    max: 200000
   DQN-LEARNING_STARTS:
     min: 1000
     max: 50000
@@ -102,5 +64,13 @@ parameters:
     min: 0.5
     max: 0.999
   DQN-TRAIN_TIMESTEPS:
-    min: 1000
-    max: 100000
+    value: 100000
+  NETWORK-POKEMON_FEATURE_SIZE:
+    min: 10
+    max: 500
+  NETWORK-HIDDEN_LAYER_SIZE:
+    min: 10
+    max: 1000
+  NETWORK-NUM_LAYERS:
+    min: 1
+    max: 10
