@@ -1,6 +1,6 @@
-'''
+"""
 Various data things
-'''
+"""
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.pokemon_gender import PokemonGender
 from poke_env.environment.move_category import MoveCategory
@@ -24,17 +24,9 @@ TYPES = {
     PokemonType.ROCK: 15,
     PokemonType.STEEL: 16,
     PokemonType.WATER: 17,
-    None: 18
+    None: 18,
 }
 
-MOVE_CATS = {
-    MoveCategory.PHYSICAL: 0,
-    MoveCategory.SPECIAL: 1,
-    MoveCategory.STATUS: 2
-}
+MOVE_CATS = {MoveCategory.PHYSICAL: 0, MoveCategory.SPECIAL: 1, MoveCategory.STATUS: 2}
 
-GENDERS = {
-    PokemonGender.FEMALE: 0,
-    PokemonGender.MALE: 1,
-    PokemonGender.NEUTRAL: 2
-}
+GENDERS = {PokemonGender.FEMALE: 0, PokemonGender.MALE: 1, PokemonGender.NEUTRAL: 2}

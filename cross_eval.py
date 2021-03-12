@@ -5,10 +5,9 @@ from poke_env.player.random_player import RandomPlayer
 from poke_env.player.utils import cross_evaluate
 from tabulate import tabulate
 
+
 async def main():
-    players = [
-        RandomPlayer(max_concurrent_battles=10) for _ in range(3)
-    ]
+    players = [RandomPlayer(max_concurrent_battles=10) for _ in range(3)]
     cross_evaluation = await cross_evaluate(players, n_challenges=20)
     # Defines a header for displaying results
     table = [["-"] + [p.username for p in players]]
@@ -19,6 +18,7 @@ async def main():
 
     # Displays results in a nicely formatted table.
     print(tabulate(table))
+
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())

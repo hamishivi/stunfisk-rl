@@ -5,11 +5,13 @@ from poke_env.player.player import Player
 
 from battle_converter import BattleConverter
 
+
 class SimpleRLPlayer(Gen8EnvSinglePlayer):
-    '''
+    """
     Class to handle the interaction between game and algo
     Main 'embedding' handled by BattleConverter class
-    '''
+    """
+
     def __init__(self, cfg, *args, **kwargs):
         # init all the parent stuff
         super().__init__(*args, **kwargs)
@@ -19,7 +21,7 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
         self.observation_space = spaces.Box(
             low=self.bc.get_lower_bounds(),
             high=self.bc.get_upper_bounds(),
-            shape=self.bc.get_tensor_shape()
+            shape=self.bc.get_tensor_shape(),
         )
         self.action_box = spaces.Discrete(super().action_space[-1])
         self.cur_bat = None
@@ -27,7 +29,7 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
     @property
     def action_space(self):
         return self.action_box
-        
+
     def embed_battle(self, battle):
         return self.bc.battle_to_tensor(battle)
 
@@ -38,6 +40,7 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
             hp_value=self.cfg.REWARD.HP,
             victory_value=self.cfg.REWARD.VICTORY,
         )
+
 
 # for playing against users
 class EvaluatePlayer(Player):
@@ -50,4 +53,3 @@ class EvaluatePlayer(Player):
         obs = self.env_player.embed_battle(battle)
         action, _ = self.model.predict(obs.reshape(1, -1), deterministic=True)
         return self.env_player._action_to_move(action[0], battle)
-
