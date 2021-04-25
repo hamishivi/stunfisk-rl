@@ -19,7 +19,7 @@ def train(env_player, opponent, model, timesteps=100000):
     )
 
 
-def test(env_player, opponent, model, algo_name="DQN", eval_eps=100):
+def test(env_player, opponent, model, eval_eps=100):
     def evaluate(player, model):
         player.reset_battles()
         evaluate_policy(model, player, n_eval_episodes=eval_eps)

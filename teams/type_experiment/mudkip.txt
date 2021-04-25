@@ -1,0 +1,9 @@
+Mudkip @ Leftovers
+Ability: Torrent
+EVs: 248 HP / 8 Def / 252 SpD
+Calm Nature
+IVs: 0 Atk
+- Water Gun
+- Tackle
+- Earthquake
+- Protect

@@ -1,0 +1,7 @@
+Grookey
+Ability: Overgrow
+Level: 6
+EVs: 1 HP
+- Growl
+- Scratch
+- Branch Poke

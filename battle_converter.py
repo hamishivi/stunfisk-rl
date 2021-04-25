@@ -3,6 +3,7 @@ Utilities for converting pokemon and battle-related items to tensors.
 """
 import numpy as np
 from data import TYPES, MOVE_CATS, GENDERS
+from gym import spaces
 
 
 class BattleOptions:
@@ -49,15 +50,6 @@ class BattleConverter:
         # move features
         self.move_feats = [
             BattleOptions(
-                "type_mult",
-                0,
-                5,
-                lambda x, b: x.damage_multiplier(
-                    b.opponent_active_pokemon.type_1, b.opponent_active_pokemon.type_1
-                ),
-                cfg.BATTLE.MOVE.MOVE_MULT,
-            ),
-            BattleOptions(
                 "acc", 0, 100, 1, lambda x: x.accuracy, cfg.BATTLE.MOVE.ACCURACY
             ),
             BattleOptions(
@@ -68,20 +60,10 @@ class BattleConverter:
                 "pri", 0, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
             ),
             BattleOptions(
-                "cat",
-                0,
-                1,
-                len(MOVE_CATS),
-                lambda x: np.eye(len(MOVE_CATS))[MOVE_CATS[x.category]],
-                cfg.BATTLE.MOVE.CAT,
+                "cat", 0, 1, 1, lambda x: MOVE_CATS[x.category], cfg.BATTLE.MOVE.CAT
             ),
             BattleOptions(
-                "type",
-                0,
-                1,
-                len(TYPES),
-                lambda x: np.eye(len(TYPES))[TYPES[x.type]],
-                cfg.BATTLE.MOVE.TYPE,
+                "type", 0, 1, 1, lambda x: TYPES[x.type], cfg.BATTLE.MOVE.TYPE
             ),
         ]
         # pokemon features
@@ -137,26 +119,19 @@ class BattleConverter:
                 "gender",
                 0,
                 1,
-                len(GENDERS),
-                lambda x: np.eye(len(GENDERS))[GENDERS[x.gender]],
+                1,
+                lambda x: GENDERS[x.gender],
                 cfg.BATTLE.POKEMON.GENDER,
             ),
             BattleOptions(
-                "type1",
-                0,
-                1,
-                len(TYPES),
-                lambda x: np.eye(len(TYPES))[TYPES[x.types[0]]],
-                cfg.BATTLE.POKEMON.TYPE1,
+                "type1", 0, 1, 1, lambda x: TYPES[x.types[0]], cfg.BATTLE.POKEMON.TYPE1
             ),
             BattleOptions(
-                "type1",
+                "type2",
                 0,
                 1,
-                len(TYPES),
-                lambda x: np.eye(len(TYPES))[
-                    TYPES[x.types[0] if len(x.types) > 1 else TYPES["NULL"]]
-                ],
+                1,
+                lambda x: TYPES[x.types[0] if len(x.types) > 1 else None],
                 cfg.BATTLE.POKEMON.TYPE2,
             ),
         ]
@@ -167,101 +142,73 @@ class BattleConverter:
         self.num_poke = cfg.BATTLE.TEAM.SIZE  # this will always be 6, basically
         # field/battle options - currently none but maybe will add field types in future
 
-    def get_tensor_shape(self):
-        # nice and simple for now: we concat everything, and so just add all shapes
-        move_s = sum([x.shape for x in self.move_feats]) * self.num_moves
-        poke_s = (sum([x.shape for x in self.poke_feats]) + move_s) * self.num_poke
-        return (2, poke_s)
+    def get_observation_space(self):
+        # overall battle observation space. Currently,
+        # will just do two pokemon: active opp, active ours.
+        # eventually add teams.
+        # Nested dicts are not supported, so we use a nested key
+        # structure instead!
+        od = {}
+        for k, v in self.get_pokemon_obs_dict().items():
+            od[f"ours.{k}"] = v
+        for k, v in self.get_pokemon_obs_dict().items():
+            od[f"enemy.{k}"] = v
+        return spaces.Dict(od)
 
-    def get_lower_bounds(self):
-        # similar to above, but get lower bound for it all
-        # note that must match tensor embed
-        def poke_lb():
-            lb = []
-            for _ in range(self.num_poke):
-                for f in self.poke_feats:
-                    lb += [f.lower_bound for _ in range(f.shape)]
-                for _ in range(self.num_moves):
-                    for f in self.move_feats:
-                        lb += [f.lower_bound for _ in range(f.shape)]
-            return lb
+    def get_pokemon_obs_dict(self):
+        # dict representing a single pokemon
+        od = {
+            m.name: spaces.Box(low=m.lower_bound, high=m.upper_bound, shape=(m.shape,))
+            for m in self.poke_feats
+            if m.active
+        }
+        for i in range(self.num_moves):
+            for k, v in self.get_move_obs_dict().items():
+                od[f"moves.{i}.{k}"] = v
+        return od
 
-        return np.array([poke_lb(), poke_lb()])
+    def get_move_obs_dict(self):
+        # dict representing a single move
+        return {
+            m.name: spaces.Box(low=m.lower_bound, high=m.upper_bound, shape=(m.shape,))
+            for m in self.move_feats
+            if m.active
+        }
 
-    def get_upper_bounds(self):
-        def poke_ub():
-            ub = []
-            for _ in range(self.num_poke):
-                for f in self.poke_feats:
-                    ub += [f.upper_bound for _ in range(f.shape)]
-                for _ in range(self.num_moves):
-                    for f in self.move_feats:
-                        ub += [f.upper_bound for _ in range(f.shape)]
-            return ub
+    def _extract_move(self, move_obj):
+        return {f.name: f.extract(move_obj) for f in self.move_feats if f.active}
 
-        return np.array([poke_ub(), poke_ub()])
-
-    def _extract_move(self, move_obj, battle_obj):
-        # damage mult is a special case
-        vals = [self.move_feats[0].extract(move_obj, battle_obj)]
-        for f in self.move_feats[1:]:
-            x = f.extract(move_obj)
-            # for now, output is either list of vals or one val
-            if type(x) == np.ndarray:
-                vals += x.tolist()
-            else:
-                vals.append(x)
-        return vals
-
+    # TODO: proper dummy values
     def _generate_dummy_move(self):
-        vals = []
-        for f in self.move_feats:
-            vals += [f.lower_bound for _ in range(f.shape)]
-        return vals
+        return {f.name: f.lower_bound for f in self.move_feats if f.active}
 
-    def _extract_poke(self, poke_obj, battle_obj):
-        vals = []
-        for f in self.poke_feats:
-            x = f.extract(poke_obj)
-            # for now, output is either list of vals or one val
-            if type(x) == np.ndarray:
-                vals += x.tolist()
-            else:
-                vals.append(x)
+    def _extract_poke(self, poke_obj):
+        vals = {f.name: f.extract(poke_obj) for f in self.poke_feats if f.active}
         move_counter = 0
-        for m in poke_obj.moves:
-            vals += self._extract_move(poke_obj.moves[m], battle_obj)
+        for i, m in enumerate(poke_obj.moves):
+            for k, v in self._extract_move(poke_obj.moves[m]).items():
+                vals[f"moves.{i}.{k}"] = v
             move_counter += 1
             if move_counter >= self.num_moves:
                 break
         while move_counter < self.num_moves:
-            vals += self._generate_dummy_move()
+            for k, v in self._generate_dummy_move().items():
+                vals[f"moves.{move_counter}.{k}"] = v
             move_counter += 1
         return vals
 
+    # TODO: proper dummy values
     def _generate_dummy_poke(self):
-        vals = []
-        for f in self.poke_feats:
-            vals += [f.lower_bound for x in range(f.shape)]
-        for _ in range(self.num_moves):
-            vals += self._generate_dummy_move()
+        vals = {f.name: f.lower_bound for f in self.poke_feats if f.active}
+        for i in range(self.num_moves):
+            for k, v in self._generate_dummy_move().items():
+                vals[f"moves.{i}.{k}"] = v
         return vals
 
     def battle_to_tensor(self, battle):
-        our_team = []
-        for poke in battle.team:
-            our_team += self._extract_poke(battle.team[poke], battle)
-        p_count = 0
-        their_team = []
-        for poke in battle.opponent_team:
-            p_count += 1
-            their_team += self._extract_poke(battle.opponent_team[poke], battle)
-        while p_count < self.num_poke:
-            their_team += self._generate_dummy_poke()
-            p_count += 1
-        res = np.array([our_team, their_team])
-        if res.shape != (2, 924):
-            import pdb
-
-            pdb.set_trace()
-        return np.array([our_team, their_team])
+        od = {}
+        for k, v in self._extract_poke(battle.active_pokemon).items():
+            od[f"ours.{k}"] = v
+        for k, v in self._extract_poke(battle.opponent_active_pokemon).items():
+            od[f"enemy.{k}"] = v
+        return od

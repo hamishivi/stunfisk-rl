@@ -2,13 +2,15 @@ import wandb
 from yacs.config import CfgNode
 from config import cfg
 from poke_env.player.random_player import RandomPlayer
-from stable_baselines3 import DQN
-from stable_baselines3.dqn import MlpPolicy
+from stable_baselines3 import DQN, PPO
+from stable_baselines3.dqn import MlpPolicy as DqnMlpPolicy
+from stable_baselines3.ppo import MlpPolicy as PpoMlpPolicy
 from max_player import MaxDamagePlayer
 from rl_player import SimpleRLPlayer
 from pokefeat_extractor import PokemonFeatureExtractor
 from battle_env import train, test
 import yaml
+from tabulate import tabulate
 
 
 def cfg_node_to_dict(cfg):
@@ -44,42 +46,63 @@ def unflatten_dict(raw_config):
 
 # main driver for running stuff
 def train_and_test(cfg):
-
+    env_player = SimpleRLPlayer(
+        cfg,
+        battle_format="gen8anythinggoes",
+        team=open("teams/type_experiment/starting_grookey.txt", "r").read(),
+    )
+    max_opponent = MaxDamagePlayer(
+        battle_format="gen8anythinggoes",
+        team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
+    )
+    rand_opponent = RandomPlayer(
+        battle_format="gen8anythinggoes",
+        team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
+    )
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
         features_extractor_kwargs=dict(
-            net_arch=[cfg.NETWORK.POKEMON_FEATURE_SIZE]
-            + [cfg.NETWORK.HIDDEN_LAYER_SIZE] * cfg.NETWORK.NUM_LAYERS,
+            poke_feats=env_player.bc.poke_feats,
+            move_feats=env_player.bc.move_feats,
             features_dim=cfg.NETWORK.POKEMON_FEATURE_SIZE,
-            team_size=cfg.BATTLE.TEAM.SIZE,
         ),
     )
-    env_player = SimpleRLPlayer(cfg, battle_format="gen8randombattle")
-    max_opponent = MaxDamagePlayer(battle_format="gen8randombattle")
-    rand_opponent = RandomPlayer(battle_format="gen8randombattle")
-    model = DQN(
-        MlpPolicy,
+    # model = DQN(
+    #    DqnMlpPolicy,
+    #    env_player,
+    #    policy_kwargs=policy_kwargs,
+    #    learning_rate=cfg.DQN.LEARNING_RATE,
+    #    buffer_size=cfg.DQN.BUFFER_SIZE,
+    #    learning_starts=cfg.DQN.LEARNING_STARTS,
+    #    gamma=cfg.DQN.GAMMA,
+    #    verbose=1,
+    #    tensorboard_log="./dqn_pokemon_tensorboard/"
+    # )
+    model = PPO(
+        PpoMlpPolicy,
         env_player,
         policy_kwargs=policy_kwargs,
         learning_rate=cfg.DQN.LEARNING_RATE,
-        buffer_size=cfg.DQN.BUFFER_SIZE,
-        learning_starts=cfg.DQN.LEARNING_STARTS,
         gamma=cfg.DQN.GAMMA,
-        verbose=0,
+        verbose=1,
+        tensorboard_log="./dqn_pokemon_tensorboard/",
     )
     # train against both?
     train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    train(env_player, max_opponent, model)
+    print("evaluating random....")
+    # train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
     rand_won = test(env_player, rand_opponent, model)
+    print("evaluating max....")
     max_won = test(env_player, max_opponent, model)
     return rand_won, max_won
 
 
 raw_cfg = cfg_node_to_dict(cfg)
 raw_cfg_flat = flatten_dict(raw_cfg)
-wandb.init(config=raw_cfg_flat, project="stunfisk-rl")
+# wandb.init(config=raw_cfg_flat, project="stunfisk-rl")
 # load in wandb config, merge into cfg
-raw_cfg = unflatten_dict(dict(wandb.config))
+# raw_cfg = unflatten_dict(dict(wandb.config))
 cfg.merge_from_other_cfg(CfgNode(raw_cfg))
 r, m = train_and_test(cfg)
-wandb.log({"rand_won": r, "max_won": m, "avg_won": (r + m) / 2})
+print({"rand_won": r, "max_won": m, "avg_won": (r + m) / 2})
+# wandb.log({"rand_won": r, "max_won": m, "avg_won": (r + m) / 2})

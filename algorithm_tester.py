@@ -2,7 +2,7 @@
 Testing the different algos
 """
 import asyncio
-from stable_baselines3 import A2C, a2c, DQN, dqn, HER, PPO, ppo
+from stable_baselines3 import A2C, a2c, DQN, dqn, PPO, ppo
 
 from battle_env import train, test, play_human
 from max_player import MaxDamagePlayer

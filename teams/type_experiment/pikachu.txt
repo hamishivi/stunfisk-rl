@@ -1,0 +1,8 @@
+Pikachu
+Ability: Static
+EVs: 252 Atk / 4 SpA / 252 Spe
+Hasty Nature
+- Brick Break
+- Thunderbolt
+- Facade
+- Fly

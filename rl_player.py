@@ -13,16 +13,10 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
     """
 
     def __init__(self, cfg, *args, **kwargs):
-        # init all the parent stuff
         super().__init__(*args, **kwargs)
         self.cfg = cfg
         self.bc = BattleConverter(cfg)
-        # define observation space, which is based on battle converter
-        self.observation_space = spaces.Box(
-            low=self.bc.get_lower_bounds(),
-            high=self.bc.get_upper_bounds(),
-            shape=self.bc.get_tensor_shape(),
-        )
+        self.observation_space = self.bc.get_observation_space()
         self.action_box = spaces.Discrete(super().action_space[-1])
         self.cur_bat = None
 

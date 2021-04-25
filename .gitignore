@@ -4,3 +4,4 @@ __pycache__
 model_10*
 venv/
 wandb/
+dqn_pokemon_tensorboard

@@ -1,0 +1,6 @@
+Skwovet
+Ability: Cheek Pouch
+Level: 6
+EVs: 1 HP
+- Tackle
+- Tail Whip
