@@ -73,9 +73,11 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             nn.Linear(poke_feat_size, 500), nn.ReLU(), nn.Linear(500, 500), nn.ReLU()
         )
 
-        self.linear = nn.Sequential(nn.Linear(500 * 2, features_dim), nn.ReLU())
+        self.linear = nn.Sequential(nn.Linear(500 * 12, features_dim), nn.ReLU())
 
-    def forward(self, observations: Dict[str, torch.tensor]) -> torch.Tensor:
+    def encode_pokemon(
+        self, observations: Dict[str, torch.Tensor], idx: int
+    ) -> torch.Tensor:
         # we construct a tensor by simply concatenating everything together
         # if was categorical we pass it through.
         ours_tensor = []
@@ -83,6 +85,8 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
         moves_ours = defaultdict(list)
         moves_enemy = defaultdict(list)
         for k, v in observations.items():
+            if int(k.split(".")[1]) != idx:
+                continue
             if "type" in k:
                 v = self.type_encoder(v.long())
             elif "gender" in k:
@@ -94,9 +98,9 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             # special handling for moves
             if "move" in k:
                 if "ours" in k:
-                    moves_ours[k.split(".")[2]].append(v)
+                    moves_ours[k.split(".")[3]].append(v)
                 else:
-                    moves_enemy[k.split(".")[2]].append(v)
+                    moves_enemy[k.split(".")[3]].append(v)
             elif "ours" in k:
                 ours_tensor.append(v)
             else:
@@ -113,4 +117,9 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
         # finally add encode pokemon
         ours_tensor = self.poke_encoder(torch.cat(ours_tensor, 1))
         enemy_tensor = self.poke_encoder(torch.cat(enemy_tensor, 1))
-        return self.linear(torch.cat([ours_tensor, enemy_tensor], 1))
+        return ours_tensor, enemy_tensor
+
+    def forward(self, observations: Dict[str, torch.tensor]) -> torch.Tensor:
+        ours, enemy = zip(*[self.encode_pokemon(observations, i) for i in range(6)])
+        team = torch.cat([torch.cat(ours, 1), torch.cat(enemy, 1)], 1)
+        return self.linear(team)

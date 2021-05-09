@@ -72,17 +72,27 @@ class BattleConverter:
                 "active", 0, 1, 1, lambda x: int(x.active), cfg.BATTLE.POKEMON.ACTIVE
             ),
             BattleOptions(
-                "atk", 0, 2000, 1, lambda x: x.stats["atk"], cfg.BATTLE.POKEMON.ATTACK
+                "atk",
+                0,
+                2000,
+                1,
+                lambda x: x.base_stats["atk"],
+                cfg.BATTLE.POKEMON.ATTACK,
             ),
             BattleOptions(
-                "def", 0, 2000, 1, lambda x: x.stats["def"], cfg.BATTLE.POKEMON.DEFENCE
+                "def",
+                0,
+                2000,
+                1,
+                lambda x: x.base_stats["def"],
+                cfg.BATTLE.POKEMON.DEFENCE,
             ),
             BattleOptions(
                 "spa",
                 0,
                 2000,
                 1,
-                lambda x: x.stats["spa"],
+                lambda x: x.base_stats["spa"],
                 cfg.BATTLE.POKEMON.SPECIAL_ATTACK,
             ),
             BattleOptions(
@@ -90,11 +100,16 @@ class BattleConverter:
                 0,
                 2000,
                 1,
-                lambda x: x.stats["spd"],
+                lambda x: x.base_stats["spd"],
                 cfg.BATTLE.POKEMON.SPECIAL_DEFENCE,
             ),
             BattleOptions(
-                "spe", 0, 2000, 1, lambda x: x.stats["spe"], cfg.BATTLE.POKEMON.SPEED
+                "spe",
+                0,
+                2000,
+                1,
+                lambda x: x.base_stats["spe"],
+                cfg.BATTLE.POKEMON.SPEED,
             ),
             BattleOptions(
                 "hp",
@@ -149,10 +164,12 @@ class BattleConverter:
         # Nested dicts are not supported, so we use a nested key
         # structure instead!
         od = {}
-        for k, v in self.get_pokemon_obs_dict().items():
-            od[f"ours.{k}"] = v
-        for k, v in self.get_pokemon_obs_dict().items():
-            od[f"enemy.{k}"] = v
+        for i in range(6):
+            for k, v in self.get_pokemon_obs_dict().items():
+                od[f"ours.{i}.{k}"] = v
+        for i in range(6):
+            for k, v in self.get_pokemon_obs_dict().items():
+                od[f"enemy.{i}.{k}"] = v
         return spaces.Dict(od)
 
     def get_pokemon_obs_dict(self):
@@ -207,8 +224,23 @@ class BattleConverter:
 
     def battle_to_tensor(self, battle):
         od = {}
-        for k, v in self._extract_poke(battle.active_pokemon).items():
-            od[f"ours.{k}"] = v
-        for k, v in self._extract_poke(battle.opponent_active_pokemon).items():
-            od[f"enemy.{k}"] = v
+        counter = 0
+        # this is sort of hacky...
+        for i, (_, pokemon) in enumerate(battle.team.items()):
+            for k, v in self._extract_poke(pokemon).items():
+                od[f"ours.{i}.{k}"] = v
+            counter += 1
+        while counter < 6:
+            for k, v in self._generate_dummy_poke().items():
+                od[f"ours.{counter}.{k}"] = v
+            counter += 1
+        counter = 0
+        for i, (_, pokemon) in enumerate(battle.opponent_team.items()):
+            for k, v in self._extract_poke(battle.opponent_active_pokemon).items():
+                od[f"enemy.{i}.{k}"] = v
+            counter += 1
+        while counter < 6:
+            for k, v in self._generate_dummy_poke().items():
+                od[f"enemy.{counter}.{k}"] = v
+            counter += 1
         return od

@@ -45,19 +45,20 @@ def unflatten_dict(raw_config):
 
 
 # main driver for running stuff
+# gen8anythinggoes
 def train_and_test(cfg):
     env_player = SimpleRLPlayer(
         cfg,
-        battle_format="gen8anythinggoes",
-        team=open("teams/type_experiment/starting_grookey.txt", "r").read(),
+        battle_format="gen8randombattle",
+        # team=open("teams/type_experiment/starting_grookey.txt", "r").read(),
     )
     max_opponent = MaxDamagePlayer(
-        battle_format="gen8anythinggoes",
-        team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
+        battle_format="gen8randombattle",
+        # team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
     )
     rand_opponent = RandomPlayer(
-        battle_format="gen8anythinggoes",
-        team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
+        battle_format="gen8randombattle",
+        # team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
     )
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
