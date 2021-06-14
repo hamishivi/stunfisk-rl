@@ -1,4 +1,3 @@
-import wandb
 from yacs.config import CfgNode
 from config import cfg
 from poke_env.player.random_player import RandomPlayer
@@ -10,7 +9,6 @@ from rl_player import SimpleRLPlayer
 from pokefeat_extractor import PokemonFeatureExtractor
 from battle_env import train, test
 import yaml
-from tabulate import tabulate
 
 
 def cfg_node_to_dict(cfg):
@@ -48,52 +46,50 @@ def unflatten_dict(raw_config):
 # gen8anythinggoes
 def train_and_test(cfg):
     env_player = SimpleRLPlayer(
-        cfg,
-        battle_format="gen8randombattle",
-        # team=open("teams/type_experiment/starting_grookey.txt", "r").read(),
+        cfg, battle_format="gen8anythinggoes", team=open("teams/red.txt", "r").read()
     )
     max_opponent = MaxDamagePlayer(
-        battle_format="gen8randombattle",
-        # team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
+        battle_format="gen8anythinggoes", team=open("teams/red.txt", "r").read()
     )
     rand_opponent = RandomPlayer(
-        battle_format="gen8randombattle",
-        # team=open("teams/type_experiment/youngster_jake.txt", "r").read(),
+        battle_format="gen8anythinggoes", team=open("teams/red.txt", "r").read()
     )
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
+        net_arch=[cfg.NETWORK.POKEMON_FEATURE_SIZE]
+        + [cfg.NETWORK.HIDDEN_LAYER_SIZE] * cfg.NETWORK.NUM_LAYERS,
         features_extractor_kwargs=dict(
             poke_feats=env_player.bc.poke_feats,
             move_feats=env_player.bc.move_feats,
             features_dim=cfg.NETWORK.POKEMON_FEATURE_SIZE,
         ),
     )
-    # model = DQN(
-    #    DqnMlpPolicy,
-    #    env_player,
-    #    policy_kwargs=policy_kwargs,
-    #    learning_rate=cfg.DQN.LEARNING_RATE,
-    #    buffer_size=cfg.DQN.BUFFER_SIZE,
-    #    learning_starts=cfg.DQN.LEARNING_STARTS,
-    #    gamma=cfg.DQN.GAMMA,
-    #    verbose=1,
-    #    tensorboard_log="./dqn_pokemon_tensorboard/"
-    # )
-    model = PPO(
-        PpoMlpPolicy,
+    model = DQN(
+        DqnMlpPolicy,
         env_player,
         policy_kwargs=policy_kwargs,
         learning_rate=cfg.DQN.LEARNING_RATE,
+        buffer_size=cfg.DQN.BUFFER_SIZE,
+        learning_starts=cfg.DQN.LEARNING_STARTS,
         gamma=cfg.DQN.GAMMA,
         verbose=1,
         tensorboard_log="./dqn_pokemon_tensorboard/",
     )
+    # model = PPO(
+    #    PpoMlpPolicy,
+    #    env_player,
+    #    policy_kwargs=policy_kwargs,
+    #    learning_rate=cfg.DQN.LEARNING_RATE,
+    #    gamma=cfg.DQN.GAMMA,
+    #    verbose=1,
+    #    tensorboard_log="./dqn_pokemon_tensorboard/",
+    # )
     # train against both?
-    train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    print("evaluating random....")
-    # train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
+    # train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
+    # print("evaluating random....")
+    train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
+    model.save("dqn_pokemon")
     rand_won = test(env_player, rand_opponent, model)
-    print("evaluating max....")
     max_won = test(env_player, max_opponent, model)
     return rand_won, max_won
 

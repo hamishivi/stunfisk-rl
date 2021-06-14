@@ -197,7 +197,7 @@ class BattleConverter:
 
     # TODO: proper dummy values
     def _generate_dummy_move(self):
-        return {f.name: f.lower_bound for f in self.move_feats if f.active}
+        return {f.name: f.upper_bound for f in self.move_feats if f.active}
 
     def _extract_poke(self, poke_obj):
         vals = {f.name: f.extract(poke_obj) for f in self.poke_feats if f.active}
@@ -216,7 +216,7 @@ class BattleConverter:
 
     # TODO: proper dummy values
     def _generate_dummy_poke(self):
-        vals = {f.name: f.lower_bound for f in self.poke_feats if f.active}
+        vals = {f.name: f.upper_bound for f in self.poke_feats if f.active}
         for i in range(self.num_moves):
             for k, v in self._generate_dummy_move().items():
                 vals[f"moves.{i}.{k}"] = v
