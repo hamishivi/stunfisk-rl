@@ -47,9 +47,9 @@ _C.DQN.TRAIN_TIMESTEPS = 1000000
 
 ## Network size details
 _C.NETWORK = CN()
-_C.NETWORK.POKEMON_FEATURE_SIZE = 500
+_C.NETWORK.POKEMON_FEATURE_SIZE = 6000
 _C.NETWORK.HIDDEN_LAYER_SIZE = 500
-_C.NETWORK.NUM_LAYERS = 5
+_C.NETWORK.NUM_LAYERS = 10
 
 # using global singleton pattern (should swap later)
 cfg = _C

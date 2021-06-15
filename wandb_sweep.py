@@ -46,18 +46,22 @@ def unflatten_dict(raw_config):
 # gen8anythinggoes
 def train_and_test(cfg):
     env_player = SimpleRLPlayer(
-        cfg, battle_format="gen8anythinggoes", team=open("teams/red.txt", "r").read()
+        cfg,
+        battle_format="gen8anythinggoes",
+        team=open("teams/starting_grookey.txt", "r").read(),
     )
     max_opponent = MaxDamagePlayer(
-        battle_format="gen8anythinggoes", team=open("teams/red.txt", "r").read()
+        battle_format="gen8anythinggoes",
+        team=open("teams/youngster_jake.txt", "r").read(),
     )
     rand_opponent = RandomPlayer(
-        battle_format="gen8anythinggoes", team=open("teams/red.txt", "r").read()
+        battle_format="gen8anythinggoes",
+        team=open("teams/youngster_jake.txt", "r").read(),
     )
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
         net_arch=[cfg.NETWORK.POKEMON_FEATURE_SIZE]
-        + [cfg.NETWORK.HIDDEN_LAYER_SIZE] * cfg.NETWORK.NUM_LAYERS,
+        + [6000, 5000, 4000, 3000, 2000, 1000, 500, 250],
         features_extractor_kwargs=dict(
             poke_feats=env_player.bc.poke_feats,
             move_feats=env_player.bc.move_feats,
