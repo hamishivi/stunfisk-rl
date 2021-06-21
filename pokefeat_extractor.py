@@ -74,7 +74,7 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
         )
 
         self.linear = nn.Sequential(
-            nn.Linear(poke_feat_size * 12, features_dim), nn.ReLU()
+            nn.Linear(poke_feat_size * 2, features_dim), nn.ReLU()
         )
 
     def encode_pokemon(
@@ -122,6 +122,6 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
         return torch.cat(ours_tensor, 1), torch.cat(enemy_tensor, 1)
 
     def forward(self, observations: Dict[str, torch.tensor]) -> torch.Tensor:
-        ours, enemy = zip(*[self.encode_pokemon(observations, i) for i in range(6)])
+        ours, enemy = zip(*[self.encode_pokemon(observations, i) for i in range(1)])
         team = torch.cat([torch.cat(ours, 1), torch.cat(enemy, 1)], 1)
         return self.linear(team)
