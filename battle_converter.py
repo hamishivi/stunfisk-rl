@@ -65,6 +65,7 @@ class BattleConverter:
             BattleOptions(
                 "type", 0, 1, 1, lambda x: TYPES[x.type], cfg.BATTLE.MOVE.TYPE
             ),
+            BattleOptions("mm", 0, 5, 1, lambda x, d: d(x), cfg.BATTLE.MOVE.MOVE_MULT),
         ]
         # pokemon features
         self.poke_feats = [
@@ -192,18 +193,28 @@ class BattleConverter:
             if m.active
         }
 
-    def _extract_move(self, move_obj):
-        return {f.name: f.extract(move_obj) for f in self.move_feats if f.active}
+    def _extract_move(self, move_obj, enemy_types):
+        d = {
+            f.name: f.extract(move_obj)
+            for f in self.move_feats
+            if f.active and f.name != "mm"
+        }
+        if self.move_feats[-1].active:
+            mult = move_obj.type.damage_multiplier(
+                enemy_types[0], enemy_types[1] if len(enemy_types) > 1 else None
+            )
+            d["mm"] = mult
+        return d
 
     # TODO: proper dummy values
     def _generate_dummy_move(self):
         return {f.name: f.upper_bound for f in self.move_feats if f.active}
 
-    def _extract_poke(self, poke_obj):
+    def _extract_poke(self, poke_obj, enemy_type):
         vals = {f.name: f.extract(poke_obj) for f in self.poke_feats if f.active}
         move_counter = 0
         for i, m in enumerate(poke_obj.moves):
-            for k, v in self._extract_move(poke_obj.moves[m]).items():
+            for k, v in self._extract_move(poke_obj.moves[m], enemy_type).items():
                 vals[f"moves.{i}.{k}"] = v
             move_counter += 1
             if move_counter >= self.num_moves:
@@ -226,8 +237,11 @@ class BattleConverter:
         od = {}
         counter = 0
         # this is sort of hacky...
-        for i, (_, pokemon) in enumerate(battle.team.items()):
-            for k, v in self._extract_poke(pokemon).items():
+        team = [battle.active_pokemon]
+        for i, (pokemon) in enumerate(team):
+            for k, v in self._extract_poke(
+                pokemon, battle.opponent_active_pokemon.types
+            ).items():
                 od[f"ours.{i}.{k}"] = v
             counter += 1
         while counter < 6:
@@ -235,8 +249,11 @@ class BattleConverter:
                 od[f"ours.{counter}.{k}"] = v
             counter += 1
         counter = 0
-        for i, (_, pokemon) in enumerate(battle.opponent_team.items()):
-            for k, v in self._extract_poke(battle.opponent_active_pokemon).items():
+        team = [battle.opponent_active_pokemon]
+        for i, (pokemon) in enumerate(team):
+            for k, v in self._extract_poke(
+                battle.opponent_active_pokemon, battle.active_pokemon.types
+            ).items():
                 od[f"enemy.{i}.{k}"] = v
             counter += 1
         while counter < 6:

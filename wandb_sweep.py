@@ -60,39 +60,38 @@ def train_and_test(cfg):
     )
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
-        net_arch=[cfg.NETWORK.POKEMON_FEATURE_SIZE]
-        + [1000, 500, 250, 100, 50],
+        net_arch=[cfg.NETWORK.POKEMON_FEATURE_SIZE] + [1000, 500, 250, 100, 50],
         features_extractor_kwargs=dict(
             poke_feats=env_player.bc.poke_feats,
             move_feats=env_player.bc.move_feats,
             features_dim=cfg.NETWORK.POKEMON_FEATURE_SIZE,
         ),
     )
-    #model = DQN(
-    #    DqnMlpPolicy,
-    #    env_player,
-    #    policy_kwargs=policy_kwargs,
-    #    learning_rate=cfg.DQN.LEARNING_RATE,
-    #    buffer_size=cfg.DQN.BUFFER_SIZE,
-    #    learning_starts=cfg.DQN.LEARNING_STARTS,
-    #    gamma=cfg.DQN.GAMMA,
-    #    verbose=1,
-    #    tensorboard_log="./dqn_pokemon_tensorboard/",
-    #)
-    model = PPO(
-       PpoMlpPolicy,
-       env_player,
-       policy_kwargs=policy_kwargs,
-       learning_rate=cfg.DQN.LEARNING_RATE,
-       gamma=cfg.DQN.GAMMA,
-       verbose=1,
-       tensorboard_log="./dqn_pokemon_tensorboard/",
+    model = DQN(
+        DqnMlpPolicy,
+        env_player,
+        policy_kwargs=policy_kwargs,
+        learning_rate=cfg.DQN.LEARNING_RATE,
+        buffer_size=cfg.DQN.BUFFER_SIZE,
+        learning_starts=cfg.DQN.LEARNING_STARTS,
+        gamma=cfg.DQN.GAMMA,
+        verbose=1,
+        tensorboard_log="./dqn_pokemon_tensorboard/",
     )
+    # model = PPO(
+    #   PpoMlpPolicy,
+    #   env_player,
+    #   policy_kwargs=policy_kwargs,
+    #   learning_rate=cfg.DQN.LEARNING_RATE,
+    #   gamma=cfg.DQN.GAMMA,
+    #   verbose=1,
+    #   tensorboard_log="./dqn_pokemon_tensorboard/",
+    # )
     ## train against both?
-    #train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    #print("saving....")
-    #train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    model.load("dqn_pokemon_jake_grookey_ppo")
+    train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
+    # train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
+    print("saving....")
+    model.save("test")
     print("evaluating...")
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
