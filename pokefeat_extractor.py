@@ -47,7 +47,7 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             [
                 m.shape
                 for m in move_feats
-                if "type" not in m.name and "cat" not in m.name
+                if "type" not in m.name and "cat" not in m.name and m.active
             ]
         )
         ## add type and cat
@@ -63,7 +63,7 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             [
                 m.shape
                 for m in poke_feats
-                if "type" not in m.name and "gender" not in m.name
+                if "type" not in m.name and "gender" not in m.name and m.active
             ]
         )
         # add types and gender

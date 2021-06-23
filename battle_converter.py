@@ -165,10 +165,10 @@ class BattleConverter:
         # Nested dicts are not supported, so we use a nested key
         # structure instead!
         od = {}
-        for i in range(6):
+        for i in range(1):
             for k, v in self.get_pokemon_obs_dict().items():
                 od[f"ours.{i}.{k}"] = v
-        for i in range(6):
+        for i in range(1):
             for k, v in self.get_pokemon_obs_dict().items():
                 od[f"enemy.{i}.{k}"] = v
         return spaces.Dict(od)
@@ -244,10 +244,10 @@ class BattleConverter:
             ).items():
                 od[f"ours.{i}.{k}"] = v
             counter += 1
-        while counter < 6:
-            for k, v in self._generate_dummy_poke().items():
-                od[f"ours.{counter}.{k}"] = v
-            counter += 1
+        # while counter < 6:
+        #    for k, v in self._generate_dummy_poke().items():
+        #        od[f"ours.{counter}.{k}"] = v
+        #    counter += 1
         counter = 0
         team = [battle.opponent_active_pokemon]
         for i, (pokemon) in enumerate(team):
@@ -256,8 +256,8 @@ class BattleConverter:
             ).items():
                 od[f"enemy.{i}.{k}"] = v
             counter += 1
-        while counter < 6:
-            for k, v in self._generate_dummy_poke().items():
-                od[f"enemy.{counter}.{k}"] = v
-            counter += 1
+        # while counter < 6:
+        #    for k, v in self._generate_dummy_poke().items():
+        #        od[f"enemy.{counter}.{k}"] = v
+        #    counter += 1
         return od
