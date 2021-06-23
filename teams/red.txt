@@ -1,56 +1,53 @@
-Hydreigon @ Life Orb
-Ability: Levitate
-EVs: 4 Atk / 252 SpA / 252 Spe
-Hasty Nature
-- Draco Meteor
-- Superpower
-- Flash Cannon
-- Roost
-
-Zapdos @ Heavy-Duty Boots
-Ability: Static
-EVs: 248 HP / 244 Def / 16 Spe
+Espeon @ Heat Rock
+Ability: Magic Bounce
+EVs: 252 HP / 4 SAtk / 252 Def
 Bold Nature
-IVs: 0 Atk
-- Volt Switch
-- Hurricane
-- Roost
-- Defog
+- Wish
+- Sunny Day
+- Psychic
+- Baton Pass
 
-Clefable @ Leftovers
-Ability: Magic Guard
-EVs: 252 HP / 84 Def / 140 SpD / 32 Spe
-Calm Nature
-- Moonblast
-- Knock Off
-- Soft-Boiled
-- Thunder Wave
+Charizard @ Choice Scarf
+Ability: Solar Power
+EVs: 252 SAtk / 252 Spd / 4 HP
+Modest Nature
+- Air Slash
+- Hidden Power [Ice]
+- Fire Blast
+- Focus Blast
 
-Landorus-Therian (M) @ Leftovers
-Ability: Intimidate
-EVs: 252 HP / 4 Atk / 252 Def
-Impish Nature
-IVs: 30 Spe
-- Stealth Rock
-- Earthquake
-- Toxic
-- U-turn
-
-Heatran @ Leftovers
-Ability: Flash Fire
-EVs: 252 HP / 128 SpD / 128 Spe
-Calm Nature
-IVs: 0 Atk
-- Taunt
-- Magma Storm
-- Earth Power
-- Lava Plume
-
-Dragapult @ Choice Specs
-Ability: Infiltrator
-EVs: 252 SpA / 4 SpD / 252 Spe
+Venusaur @ Life Orb
+Ability: Chlorophyll
+EVs: 4 Def / 252 SAtk / 180 Spd
 Timid Nature
-- Draco Meteor
-- Shadow Ball
-- Hex
-- U-turn
+- Giga Drain
+- Sleep Powder
+- Hidden Power [Fire]
+- Growth
+
+Blastoise @ Leftovers
+Ability: Rain Dish
+EVs: 252 HP / 252 Def / 4 SDef
+Bold Nature
+- Rapid Spin
+- Scald
+- Roar
+- Toxic
+
+Snorlax @ Heat Rock
+Ability: Thick Fat
+EVs: 4 Atk / 52 Def / 200 SDef / 252 HP
+Impish Nature
+- Fire Punch
+- Whirlwind
+- Body Slam
+- Sunny Day
+
+Pikachu (M) @ Light Ball
+Ability: Lightningrod
+EVs: 252 SAtk / 252 Spd / 4 HP
+Timid Nature
+- Substitute
+- Thunderbolt
+- Encore
+- Hidden Power [Ice]

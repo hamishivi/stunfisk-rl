@@ -46,17 +46,13 @@ def unflatten_dict(raw_config):
 # gen8anythinggoes
 def train_and_test(cfg):
     env_player = SimpleRLPlayer(
-        cfg,
-        battle_format="gen8anythinggoes",
-        team=open("teams/starting_grookey.txt", "r").read(),
+        cfg, battle_format="gen7anythinggoes", team=open("teams/red.txt", "r").read()
     )
     max_opponent = MaxDamagePlayer(
-        battle_format="gen8anythinggoes",
-        team=open("teams/youngster_jake.txt", "r").read(),
+        battle_format="gen7anythinggoes", team=open("teams/red.txt", "r").read()
     )
     rand_opponent = RandomPlayer(
-        battle_format="gen8anythinggoes",
-        team=open("teams/youngster_jake.txt", "r").read(),
+        battle_format="gen7anythinggoes", team=open("teams/red.txt", "r").read()
     )
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
@@ -78,20 +74,11 @@ def train_and_test(cfg):
         verbose=1,
         tensorboard_log="./dqn_pokemon_tensorboard/",
     )
-    # model = PPO(
-    #   PpoMlpPolicy,
-    #   env_player,
-    #   policy_kwargs=policy_kwargs,
-    #   learning_rate=cfg.DQN.LEARNING_RATE,
-    #   gamma=cfg.DQN.GAMMA,
-    #   verbose=1,
-    #   tensorboard_log="./dqn_pokemon_tensorboard/",
-    # )
-    ## train against both?
+    # train against both?
     train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
     # train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
     print("saving....")
-    model.save("test")
+    model.save("red_rand")
     print("evaluating...")
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
