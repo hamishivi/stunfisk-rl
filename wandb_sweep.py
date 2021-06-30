@@ -1,9 +1,8 @@
 from yacs.config import CfgNode
 from config import cfg
 from poke_env.player.random_player import RandomPlayer
-from stable_baselines3 import DQN, PPO
+from stable_baselines3 import DQN
 from stable_baselines3.dqn import MlpPolicy as DqnMlpPolicy
-from stable_baselines3.ppo import MlpPolicy as PpoMlpPolicy
 from max_player import MaxDamagePlayer
 from rl_player import SimpleRLPlayer
 from pokefeat_extractor import PokemonFeatureExtractor
@@ -96,16 +95,16 @@ cfg.merge_from_other_cfg(CfgNode(raw_cfg))
 results = {}
 # tests:
 # grookey vs youngster jake rand and max
-exp_name = "Grookey vs Jake"
+exp_name = "Grook vs Jake"
 results[exp_name] = {}
 r, m, _, _ = train_and_test(
-    cfg, "gen7anythinggoes", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
+    cfg, "gen8anythinggoes", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
 )
 results[exp_name]["rand | rand"] = r
 results[exp_name]["rand | max"] = m
 r, m, _, _ = train_and_test(
     cfg,
-    "gen7anythinggoes",
+    "gen8anythinggoes",
     "teams/starting_grookey.txt",
     "teams/youngster_jake.txt",
     train_rand=False,
@@ -113,7 +112,7 @@ r, m, _, _ = train_and_test(
 results[exp_name]["max | rand"] = r
 results[exp_name]["max | max"] = m
 # red vs red rand and max
-exp_name = "Red vs Red"
+exp_name = "Red vs Red  "
 results[exp_name] = {}
 r, m, _, _ = train_and_test(cfg, "gen7anythinggoes", "teams/red.txt", "teams/red.txt")
 results[exp_name]["rand | rand"] = r
@@ -124,7 +123,7 @@ r, m, _, _ = train_and_test(
 results[exp_name]["max | rand"] = r
 results[exp_name]["max | max"] = m
 # full randoms rand and max
-exp_name = "Random vs Random"
+exp_name = "Rand vs Rand"
 results[exp_name] = {}
 r, m, _, _ = train_and_test(cfg, "gen8randombattle")
 results[exp_name]["rand | rand"] = r
@@ -133,10 +132,10 @@ r, m, _, _ = train_and_test(cfg, "gen8randombattle", train_rand=False)
 results[exp_name]["max | rand"] = r
 results[exp_name]["max | max"] = m
 # wandb.log({"rand_won": r, "max_won": m, "avg_won": (r + m) / 2})
-print("exp_name\t\trand-rand\trand-max\tmax-rand\tmax-max")
-print("-" * 20)
+print("exp_name\tr-r\tr-m\tm-r\tm-m")
+print("-" * 50)
 for name, exp in results.items():
     print(
-        f'{name}\t\t{exp["rand | rand"]}\t{exp["rand | max"]}\t{exp["max | rand"]}\t{exp["max | max"]}'
+        f'{name}\t{exp["rand | rand"]}\t{exp["rand | max"]}\t{exp["max | rand"]}\t{exp["max | max"]}'
     )
 print("done")
