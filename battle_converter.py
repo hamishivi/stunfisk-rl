@@ -50,14 +50,14 @@ class BattleConverter:
         # move features
         self.move_feats = [
             BattleOptions(
-                "acc", 0, 100, 1, lambda x: x.accuracy, cfg.BATTLE.MOVE.ACCURACY
+                "acc", -1, 100, 1, lambda x: x.accuracy, cfg.BATTLE.MOVE.ACCURACY
             ),
             BattleOptions(
-                "bsp", 0, 200, 1, lambda x: x.base_power, cfg.BATTLE.MOVE.BASE_POWER
+                "bsp", -1, 200, 1, lambda x: x.base_power, cfg.BATTLE.MOVE.BASE_POWER
             ),
-            BattleOptions("pp", 0, 50, 1, lambda x: x.current_pp, cfg.BATTLE.MOVE.PP),
+            BattleOptions("pp", -1, 50, 1, lambda x: x.current_pp, cfg.BATTLE.MOVE.PP),
             BattleOptions(
-                "pri", 0, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
+                "pri", -1, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
             ),
             BattleOptions(
                 "cat", 0, 1, 1, lambda x: MOVE_CATS[x.category], cfg.BATTLE.MOVE.CAT
@@ -65,7 +65,7 @@ class BattleConverter:
             BattleOptions(
                 "type", 0, 1, 1, lambda x: TYPES[x.type], cfg.BATTLE.MOVE.TYPE
             ),
-            BattleOptions("mm", 0, 5, 1, lambda x, d: d(x), cfg.BATTLE.MOVE.MOVE_MULT),
+            BattleOptions("mm", 1, 5, 1, lambda x, d: d(x), cfg.BATTLE.MOVE.MOVE_MULT),
         ]
         # pokemon features
         self.poke_feats = [
@@ -74,7 +74,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "atk",
-                0,
+                -1,
                 2000,
                 1,
                 lambda x: x.base_stats["atk"],
@@ -82,7 +82,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "def",
-                0,
+                -1,
                 2000,
                 1,
                 lambda x: x.base_stats["def"],
@@ -90,7 +90,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spa",
-                0,
+                -1,
                 2000,
                 1,
                 lambda x: x.base_stats["spa"],
@@ -98,7 +98,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spd",
-                0,
+                -1,
                 2000,
                 1,
                 lambda x: x.base_stats["spd"],
@@ -106,7 +106,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spe",
-                0,
+                -1,
                 2000,
                 1,
                 lambda x: x.base_stats["spe"],
@@ -114,7 +114,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "hp",
-                0,
+                -1,
                 2000,
                 1,
                 lambda x: x.current_hp if x.current_hp else 0,
@@ -122,14 +122,14 @@ class BattleConverter:
             ),
             BattleOptions(
                 "hp_frac",
-                0,
+                -1,
                 1,
                 1,
                 lambda x: x.current_hp_fraction,
                 cfg.BATTLE.POKEMON.HP_FRACTION,
             ),
             BattleOptions(
-                "att", 0, 1, 1, lambda x: int(x.fainted), cfg.BATTLE.POKEMON.FAINTED
+                "att", -1, 1, 1, lambda x: int(x.fainted), cfg.BATTLE.POKEMON.FAINTED
             ),
             BattleOptions(
                 "gender",
@@ -206,9 +206,8 @@ class BattleConverter:
             d["mm"] = mult
         return d
 
-    # TODO: proper dummy values
     def _generate_dummy_move(self):
-        return {f.name: f.upper_bound for f in self.move_feats if f.active}
+        return {f.name: f.lower_bound for f in self.move_feats if f.active}
 
     def _extract_poke(self, poke_obj, enemy_type):
         vals = {f.name: f.extract(poke_obj) for f in self.poke_feats if f.active}
@@ -225,9 +224,8 @@ class BattleConverter:
             move_counter += 1
         return vals
 
-    # TODO: proper dummy values
     def _generate_dummy_poke(self):
-        vals = {f.name: f.upper_bound for f in self.poke_feats if f.active}
+        vals = {f.name: f.lower_bound for f in self.poke_feats if f.active}
         for i in range(self.num_moves):
             for k, v in self._generate_dummy_move().items():
                 vals[f"moves.{i}.{k}"] = v

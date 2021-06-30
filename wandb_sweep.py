@@ -44,16 +44,18 @@ def unflatten_dict(raw_config):
 
 # main driver for running stuff
 # gen8anythinggoes
-def train_and_test(cfg):
-    env_player = SimpleRLPlayer(
-        cfg, battle_format="gen7anythinggoes", team=open("teams/red.txt", "r").read()
-    )
-    max_opponent = MaxDamagePlayer(
-        battle_format="gen7anythinggoes", team=open("teams/red.txt", "r").read()
-    )
-    rand_opponent = RandomPlayer(
-        battle_format="gen7anythinggoes", team=open("teams/red.txt", "r").read()
-    )
+def train_and_test(
+    cfg, battle_format, team_file=None, enemy_team_file=None, train_rand=True, verbose=0
+):
+    team, enemy_team = None, None
+    if team_file:
+        team = open(team_file, "r").read()
+    if enemy_team_file:
+        enemy_team = open(enemy_team_file, "r").read()
+
+    env_player = SimpleRLPlayer(cfg, battle_format=battle_format, team=team)
+    max_opponent = MaxDamagePlayer(battle_format=battle_format, team=enemy_team)
+    rand_opponent = RandomPlayer(battle_format=battle_format, team=enemy_team)
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
         net_arch=[cfg.NETWORK.POKEMON_FEATURE_SIZE] + [1000, 500, 250, 100, 50],
@@ -71,18 +73,18 @@ def train_and_test(cfg):
         buffer_size=cfg.DQN.BUFFER_SIZE,
         learning_starts=cfg.DQN.LEARNING_STARTS,
         gamma=cfg.DQN.GAMMA,
-        verbose=1,
+        verbose=verbose,
         tensorboard_log="./dqn_pokemon_tensorboard/",
     )
     # train against both?
-    train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    # train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    print("saving....")
-    model.save("red_rand")
+    if train_rand:
+        train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
+    else:
+        train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
     print("evaluating...")
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
-    return rand_won, max_won
+    return rand_won, max_won, env_player, model
 
 
 raw_cfg = cfg_node_to_dict(cfg)
@@ -91,6 +93,50 @@ raw_cfg_flat = flatten_dict(raw_cfg)
 # load in wandb config, merge into cfg
 # raw_cfg = unflatten_dict(dict(wandb.config))
 cfg.merge_from_other_cfg(CfgNode(raw_cfg))
-r, m = train_and_test(cfg)
-print({"rand_won": r, "max_won": m, "avg_won": (r + m) / 2})
+results = {}
+# tests:
+# grookey vs youngster jake rand and max
+exp_name = "Grookey vs Jake"
+results[exp_name] = {}
+r, m, _, _ = train_and_test(
+    cfg, "gen7anythinggoes", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
+)
+results[exp_name]["rand | rand"] = r
+results[exp_name]["rand | max"] = m
+r, m, _, _ = train_and_test(
+    cfg,
+    "gen7anythinggoes",
+    "teams/starting_grookey.txt",
+    "teams/youngster_jake.txt",
+    train_rand=False,
+)
+results[exp_name]["max | rand"] = r
+results[exp_name]["max | max"] = m
+# red vs red rand and max
+exp_name = "Red vs Red"
+results[exp_name] = {}
+r, m, _, _ = train_and_test(cfg, "gen7anythinggoes", "teams/red.txt", "teams/red.txt")
+results[exp_name]["rand | rand"] = r
+results[exp_name]["rand | max"] = m
+r, m, _, _ = train_and_test(
+    cfg, "gen7anythinggoes", "teams/red.txt", "teams/red.txt", train_rand=False
+)
+results[exp_name]["max | rand"] = r
+results[exp_name]["max | max"] = m
+# full randoms rand and max
+exp_name = "Random vs Random"
+results[exp_name] = {}
+r, m, _, _ = train_and_test(cfg, "gen8randombattle")
+results[exp_name]["rand | rand"] = r
+results[exp_name]["rand | max"] = m
+r, m, _, _ = train_and_test(cfg, "gen8randombattle", train_rand=False)
+results[exp_name]["max | rand"] = r
+results[exp_name]["max | max"] = m
 # wandb.log({"rand_won": r, "max_won": m, "avg_won": (r + m) / 2})
+print("exp_name\t\trand-rand\trand-max\tmax-rand\tmax-max")
+print("-" * 20)
+for name, exp in results.items():
+    print(
+        f'{name}\t\t{exp["rand | rand"]}\t{exp["rand | max"]}\t{exp["max | rand"]}\t{exp["max | max"]}'
+    )
+print("done")

@@ -44,6 +44,6 @@ class EvaluatePlayer(Player):
         self.model = model
 
     def choose_move(self, battle):
-        obs = self.env_player.embed_battle(battle)
-        action, _ = self.model.predict(obs.reshape(1, -1), deterministic=True)
+        embed_battle = self.env_player.embed_battle(battle)
+        action, _ = self.model.predict(embed_battle.reshape(1, -1), deterministic=True)
         return self.env_player._action_to_move(action[0], battle)
