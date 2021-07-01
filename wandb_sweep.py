@@ -96,6 +96,7 @@ results = {}
 # tests:
 # grookey vs youngster jake rand and max
 exp_name = "Grook vs Jake"
+print(f"Running {exp_name}")
 results[exp_name] = {}
 r, m, _, _ = train_and_test(
     cfg, "gen8anythinggoes", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
@@ -113,6 +114,7 @@ results[exp_name]["max | rand"] = r
 results[exp_name]["max | max"] = m
 # red vs red rand and max
 exp_name = "Red vs Red  "
+print(f"Running {exp_name}")
 results[exp_name] = {}
 r, m, _, _ = train_and_test(cfg, "gen7anythinggoes", "teams/red.txt", "teams/red.txt")
 results[exp_name]["rand | rand"] = r
@@ -124,6 +126,7 @@ results[exp_name]["max | rand"] = r
 results[exp_name]["max | max"] = m
 # full randoms rand and max
 exp_name = "Rand vs Rand"
+print(f"Running {exp_name}")
 results[exp_name] = {}
 r, m, _, _ = train_and_test(cfg, "gen8randombattle")
 results[exp_name]["rand | rand"] = r
