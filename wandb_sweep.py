@@ -86,6 +86,19 @@ def train_and_test(
     return rand_won, max_won, env_player, model
 
 
+def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
+    print(f"Running {exp_name}")
+    results = {}
+    r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team)
+    results["rand | rand"] = r
+    results["rand | max"] = m
+    r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team, train_rand=False)
+    results["max | rand"] = r
+    results["max | max"] = m
+    print(results)
+    return results
+
+
 raw_cfg = cfg_node_to_dict(cfg)
 raw_cfg_flat = flatten_dict(raw_cfg)
 # wandb.init(config=raw_cfg_flat, project="stunfisk-rl")
@@ -95,46 +108,17 @@ cfg.merge_from_other_cfg(CfgNode(raw_cfg))
 results = {}
 # tests:
 # grookey vs youngster jake rand and max
-exp_name = "Grook vs Jake"
-print(f"Running {exp_name}")
-results[exp_name] = {}
-r, m, _, _ = train_and_test(
-    cfg, "gen8anythinggoes", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
+results["Jake vs Grookey"] = run_exp(
+    "Jake vs Grookey", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
 )
-results[exp_name]["rand | rand"] = r
-results[exp_name]["rand | max"] = m
-r, m, _, _ = train_and_test(
-    cfg,
-    "gen8anythinggoes",
-    "teams/starting_grookey.txt",
-    "teams/youngster_jake.txt",
-    train_rand=False,
-)
-results[exp_name]["max | rand"] = r
-results[exp_name]["max | max"] = m
 # red vs red rand and max
-exp_name = "Red vs Red  "
-print(f"Running {exp_name}")
-results[exp_name] = {}
-r, m, _, _ = train_and_test(cfg, "gen7anythinggoes", "teams/red.txt", "teams/red.txt")
-results[exp_name]["rand | rand"] = r
-results[exp_name]["rand | max"] = m
-r, m, _, _ = train_and_test(
-    cfg, "gen7anythinggoes", "teams/red.txt", "teams/red.txt", train_rand=False
+results["Red vs Red  "] = run_exp(
+    "Red vs Red  ", "teams/red.txt", "teams/red.txt", battle_format="gen7anythinggoes"
 )
-results[exp_name]["max | rand"] = r
-results[exp_name]["max | max"] = m
 # full randoms rand and max
-exp_name = "Rand vs Rand"
-print(f"Running {exp_name}")
-results[exp_name] = {}
-r, m, _, _ = train_and_test(cfg, "gen8randombattle")
-results[exp_name]["rand | rand"] = r
-results[exp_name]["rand | max"] = m
-r, m, _, _ = train_and_test(cfg, "gen8randombattle", train_rand=False)
-results[exp_name]["max | rand"] = r
-results[exp_name]["max | max"] = m
-# wandb.log({"rand_won": r, "max_won": m, "avg_won": (r + m) / 2})
+results["Rand vs Rand"] = run_exp(
+    "Rand vs Rand", None, None, battle_format="gen8randombattle"
+)
 print("exp_name\tr-r\tr-m\tm-r\tm-m")
 print("-" * 50)
 for name, exp in results.items():
