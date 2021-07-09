@@ -87,6 +87,7 @@ def train_and_test(
 
 
 def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
+    f = open(f"results_{exp_name}.txt", "w")
     print(f"Running {exp_name}")
     results = {}
     r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team)
@@ -96,6 +97,8 @@ def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
     results["max | rand"] = r
     results["max | max"] = m
     print(results)
+    f.write(results)
+    f.close()
     return results
 
 
