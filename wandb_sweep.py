@@ -44,7 +44,7 @@ def unflatten_dict(raw_config):
 # main driver for running stuff
 # gen8anythinggoes
 def train_and_test(
-    cfg, battle_format, team_file=None, enemy_team_file=None, train_rand=True, verbose=0
+    cfg, battle_format, team_file=None, enemy_team_file=None, train_rand=True, verbose=1
 ):
     team, enemy_team = None, None
     if team_file:
