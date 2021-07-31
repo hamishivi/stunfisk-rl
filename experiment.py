@@ -67,11 +67,12 @@ def train_and_test(
         train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
     else:
         train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    model.load(
-        "/Users/hamishivison/Programming/stunfisk-data/sample_model",
-        custom_objects={"policy_kwargs": policy_kwargs},
-    )
+    # model.load(
+    #     "/Users/hamishivison/Programming/stunfisk-data/gen5",
+    #     custom_objects={"policy_kwargs": policy_kwargs},
+    # )
     print("evaluating...")
+    model.save("test")
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
 

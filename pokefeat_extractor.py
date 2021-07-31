@@ -51,9 +51,9 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             ]
         )
         ## add type and cat
-        if all([m.active for m in move_feats if 'cat' in m.name]):
+        if all([m.active for m in move_feats if "cat" in m.name]):
             move_feat_size += cat_dim
-        if all([m.active for m in move_feats if 'type' in m.name]):
+        if all([m.active for m in move_feats if "type" in m.name]):
             move_feat_size += type_dim
         self.move_encoder = nn.Sequential(
             nn.Linear(move_feat_size, 200),
@@ -70,11 +70,11 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             ]
         )
         # add types and gender
-        if all([m.active for m in poke_feats if 'gender' in m.name]):
+        if all([m.active for m in poke_feats if "gender" in m.name]):
             poke_feat_size += gen_dim
-        if all([m.active for m in poke_feats if 'type1' in m.name]):
+        if all([m.active for m in poke_feats if "type1" in m.name]):
             poke_feat_size += type_dim
-        if all([m.active for m in poke_feats if 'type2' in m.name]):
+        if all([m.active for m in poke_feats if "type2" in m.name]):
             poke_feat_size += type_dim
         poke_feat_size += move_dim * 4  # add moves
         self.poke_encoder = nn.Sequential(
@@ -88,6 +88,8 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
     def encode_pokemon(
         self, observations: Dict[str, torch.Tensor], idx: int
     ) -> torch.Tensor:
+        # to ensure we keep order, unsure if order gets mussed at times.
+        observations = dict(sorted(observations.items()))
         # we construct a tensor by simply concatenating everything together
         # if was categorical we pass it through.
         ours_tensor = []

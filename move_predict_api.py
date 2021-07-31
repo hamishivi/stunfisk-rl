@@ -63,9 +63,7 @@ def load_model(model_file, cfg, battle_format):
 
 
 model = load_model(
-    "/Users/hamishivison/Programming/stunfisk-data/sample_model.zip",
-    cfg,
-    "gen8anythinggoes",
+    "/Users/hamishivison/Programming/stunfisk-data/gen5.zip", cfg, "gen5randombattle"
 )
 
 
@@ -158,81 +156,71 @@ def predict(
     obs = obs_as_tensor(obs, "cpu")
 
     q_values = model.policy.q_net.forward(obs).reshape(-1)
-    # map q value to thing.
-    # from poke-env docs:
-    # 0 <= action < 4:
-    #     The actionth available move in battle.available_moves is executed.
-    # 4 <= action < 8:
-    #     The action - 4th available move in battle.available_moves is executed, with
-    #     z-move.
-    # 8 <= action < 12:
-    #     The action - 8th available move in battle.available_moves is executed, with
-    #     mega-evolution.
-    # 12 <= action < 16:
-    #     The action - 12th available move in battle.available_moves is executed,
-    #     while dynamaxing.
-    # 16 <= action < 22
-    #     The action - 16th available switch in battle.available_switches is executed.
+    # map q value to action labels.
     return {
         "move 1": q_values[0].item(),
         "move 2": q_values[1].item(),
         "move 3": q_values[2].item(),
         "move 4": q_values[3].item(),
-        "move 1 + z-move": q_values[4].item(),
-        "move 2 + z-move": q_values[5].item(),
-        "move 3 + z-move": q_values[6].item(),
-        "move 4 + z-move": q_values[7].item(),
-        "move 1 + mega-evo": q_values[8].item(),
-        "move 2 + mega-evo": q_values[9].item(),
-        "move 3 + mega-evo": q_values[10].item(),
-        "move 4 + mega-evo": q_values[11].item(),
-        "move 1 + dynamax": q_values[12].item(),
-        "move 2 + dynamax": q_values[13].item(),
-        "move 3 + dynamax": q_values[14].item(),
-        "move 4 + dynamax": q_values[15].item(),
-        "switch to pokemon 1": q_values[16].item(),
-        "switch to pokemon 2": q_values[17].item(),
-        "switch to pokemon 3": q_values[18].item(),
-        "switch to pokemon 4": q_values[19].item(),
-        "switch to pokemon 5": q_values[20].item(),
+        # "switch to pokemon 1": q_values[4].item(),
+        # "switch to pokemon 2": q_values[5].item(),
+        # "switch to pokemon 3": q_values[6].item(),
+        # "switch to pokemon 4": q_values[7].item(),
+        # "switch to pokemon 5": q_values[8].item(),
     }
 
 
 type_strings = [str(t).split()[0] for t in TYPES.keys()]
 
 gr_inputs = [
-    gr.inputs.Slider(0, 200, 1, default=70),
-    gr.inputs.Slider(0, 5, 0.5, default=1),
-    gr.inputs.Slider(0, 200, 1, default=80),
-    gr.inputs.Slider(0, 5, 0.5, default=2),
-    gr.inputs.Slider(0, 200, 1, default=100),
-    gr.inputs.Slider(0, 5, 0.5, default=1),
-    gr.inputs.Slider(0, 200, 1, default=70),
-    gr.inputs.Slider(0, 5, 0.5, default=1),
-    gr.inputs.Slider(0, 200, default=80),
-    gr.inputs.Slider(0, 250, default=100),
-    gr.inputs.Slider(0, 200, default=50),
-    gr.inputs.Slider(0, 250, default=80),
-    gr.inputs.Slider(0, 200, default=70),
-    gr.inputs.Slider(0, 1, default=1),
-    gr.inputs.Dropdown(type_strings, default="NORMAL"),
-    gr.inputs.Dropdown(type_strings, default="NONE"),
-    gr.inputs.Slider(0, 200, 1, default=70),
-    gr.inputs.Slider(0, 5, 0.5, default=1),
-    gr.inputs.Slider(0, 200, 1, default=80),
-    gr.inputs.Slider(0, 5, 0.5, default=1),
-    gr.inputs.Slider(0, 200, 1, default=120),
-    gr.inputs.Slider(0, 5, 0.5, default=2),
-    gr.inputs.Slider(0, 200, 1, default=70),
-    gr.inputs.Slider(0, 5, 0.5, default=1),
-    gr.inputs.Slider(0, 200, default=100),
-    gr.inputs.Slider(0, 250, default=50),
-    gr.inputs.Slider(0, 200, default=80),
-    gr.inputs.Slider(0, 250, default=70),
-    gr.inputs.Slider(0, 200, default=65),
-    gr.inputs.Slider(0, 1, default=1),
-    gr.inputs.Dropdown(type_strings, default="NORMAL"),
-    gr.inputs.Dropdown(type_strings, default="NONE"),
+    gr.inputs.Slider(0, 200, 1, default=70, label="Move 1 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=1, label="Move 1 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, 1, default=80, label="Move 2 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=2, label="Move 2 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, 1, default=100, label="Move 3 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=1, label="Move 3 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, 1, default=70, label="Move 4 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=1, label="Move 4 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, default=80, label="Attack"),
+    gr.inputs.Slider(0, 250, default=100, label="Defence"),
+    gr.inputs.Slider(0, 200, default=50, label="Special Attack"),
+    gr.inputs.Slider(0, 250, default=80, label="Special Defence"),
+    gr.inputs.Slider(0, 200, default=70, label="Speed"),
+    gr.inputs.Slider(0, 1, default=1, label="HP %"),
+    gr.inputs.Dropdown(type_strings, default="NORMAL", label="Type 1"),
+    gr.inputs.Dropdown(type_strings, default="NONE", label="Type 2"),
+    gr.inputs.Slider(0, 200, 1, default=70, label="Opponent Move 1 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=1, label="Opponent Move 1 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, 1, default=80, label="Opponent Move 2 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=1, label="Opponent Move 2 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, 1, default=120, label="Opponent Move 3 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=2, label="Opponent Move 3 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, 1, default=70, label="Opponent Move 4 Base Power"),
+    gr.inputs.Slider(
+        0, 5, 0.5, default=1, label="Opponent Move 4 Type Effectiveness Multiplier"
+    ),
+    gr.inputs.Slider(0, 200, default=100, label="Enemy Attack"),
+    gr.inputs.Slider(0, 250, default=50, label="Enemy Defence"),
+    gr.inputs.Slider(0, 200, default=80, label="Enemy Special Attack"),
+    gr.inputs.Slider(0, 250, default=70, label="Enemy Special Defence"),
+    gr.inputs.Slider(0, 200, default=65, label="Enemy Speed"),
+    gr.inputs.Slider(0, 1, default=1, label="Enemy HP %"),
+    gr.inputs.Dropdown(type_strings, default="NORMAL", label="Enemy Type 1"),
+    gr.inputs.Dropdown(type_strings, default="NONE", label="Enemy Type 2"),
 ]
 
 

@@ -147,7 +147,7 @@ class BattleConverter:
                 0,
                 1,
                 1,
-                lambda x: TYPES[x.types[0] if len(x.types) > 1 else None],
+                lambda x: TYPES[x.types[1] if len(x.types) > 1 else None],
                 cfg.BATTLE.POKEMON.TYPE2,
             ),
         ]
