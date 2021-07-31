@@ -13,6 +13,8 @@ git clone https://github.com/smogon/pokemon-showdown.git
 
 # build showdown
 cd pokemon-showdown
+npm i
+npm link typescript
 ./build
 cd ..
 
