@@ -28,19 +28,6 @@ def flatten_dict(raw_cfg):
     return dict(items)
 
 
-def unflatten_dict(raw_config):
-    resultDict = dict()
-    for key, value in raw_config.items():
-        parts = key.split("-")
-        d = resultDict
-        for part in parts[:-1]:
-            if part not in d:
-                d[part] = dict()
-            d = d[part]
-        d[parts[-1]] = value
-    return resultDict
-
-
 # main driver for running stuff
 # gen8anythinggoes
 def train_and_test(
@@ -87,45 +74,35 @@ def train_and_test(
 
 
 def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
-    f = open(f"results_{exp_name}.txt", "w")
     print(f"Running {exp_name}")
     results = {}
     r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team)
     results["rand | rand"] = r
     results["rand | max"] = m
-    r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team, train_rand=False)
-    results["max | rand"] = r
-    results["max | max"] = m
-    print(results)
-    f.write(results)
-    f.close()
+    # r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team, train_rand=False)
+    # results["max | rand"] = r
+    # results["max | max"] = m
     return results
 
-
+# some of this cfg code was used for sweeps, but i removed this.
 raw_cfg = cfg_node_to_dict(cfg)
 raw_cfg_flat = flatten_dict(raw_cfg)
-# wandb.init(config=raw_cfg_flat, project="stunfisk-rl")
-# load in wandb config, merge into cfg
-# raw_cfg = unflatten_dict(dict(wandb.config))
 cfg.merge_from_other_cfg(CfgNode(raw_cfg))
+# uncomment to use raml
+cfg.merge_from_file("basic.yaml")
 results = {}
 # tests:
 # grookey vs youngster jake rand and max
-results["Jake vs Grookey"] = run_exp(
-    "Jake vs Grookey", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
-)
+# results["Jake vs Grookey"] = run_exp(
+#     "Jake vs Grookey", "teams/starting_grookey.txt", "teams/youngster_jake.txt"
+# )
 # red vs red rand and max
-results["Red vs Red  "] = run_exp(
-    "Red vs Red  ", "teams/red.txt", "teams/red.txt", battle_format="gen7anythinggoes"
-)
+# results["Red vs Red  "] = run_exp(
+#     "Red vs Red  ", "teams/red.txt", "teams/red.txt", battle_format="gen7anythinggoes"
+# )
 # full randoms rand and max
 results["Rand vs Rand"] = run_exp(
     "Rand vs Rand", None, None, battle_format="gen8randombattle"
 )
-print("exp_name\tr-r\tr-m\tm-r\tm-m")
-print("-" * 50)
-for name, exp in results.items():
-    print(
-        f'{name}\t{exp["rand | rand"]}\t{exp["rand | max"]}\t{exp["max | rand"]}\t{exp["max | max"]}'
-    )
-print("done")
+# do what you want with results!
+print(results)

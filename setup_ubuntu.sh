@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# script for setting up on vast ai instance
+
 # required items
 apt -y install sudo vim wget curl git
 # install node 14

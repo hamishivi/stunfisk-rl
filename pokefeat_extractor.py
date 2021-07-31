@@ -51,7 +51,10 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             ]
         )
         ## add type and cat
-        move_feat_size += type_dim + cat_dim
+        if all([m.active for m in move_feats if 'cat' in m.name]):
+            move_feat_size += cat_dim
+        if all([m.active for m in move_feats if 'type' in m.name]):
+            move_feat_size += type_dim
         self.move_encoder = nn.Sequential(
             nn.Linear(move_feat_size, 200),
             nn.ReLU(),
@@ -67,7 +70,12 @@ class PokemonFeatureExtractor(BaseFeaturesExtractor):
             ]
         )
         # add types and gender
-        poke_feat_size += type_dim * 2 + gen_dim
+        if all([m.active for m in poke_feats if 'gender' in m.name]):
+            poke_feat_size += gen_dim
+        if all([m.active for m in poke_feats if 'type1' in m.name]):
+            poke_feat_size += type_dim
+        if all([m.active for m in poke_feats if 'type2' in m.name]):
+            poke_feat_size += type_dim
         poke_feat_size += move_dim * 4  # add moves
         self.poke_encoder = nn.Sequential(
             nn.Linear(poke_feat_size, 500), nn.ReLU(), nn.Linear(500, 500), nn.ReLU()

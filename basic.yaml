@@ -1,0 +1,25 @@
+BATTLE:
+  MOVE:
+    ACCURACY: False
+    BASE_POWER: True
+    MOVE_MULT: True
+    PP: False
+    PRIORITY: False
+    CAT: False
+    TYPE: False
+  POKEMON:
+    ACTIVE: False
+    ATTACK: True
+    DEFENCE: True
+    SPECIAL_ATTACK: True
+    SPECIAL_DEFENCE: True
+    SPEED: True
+    HP: False
+    HP_FRACTION: True
+    FAINTED: False
+    GENDER: False
+    TYPE2: True
+    TYPE2: True
+    NUM_MOVES: 4
+DQN:
+  TRAIN_TIMESTEPS: 100000

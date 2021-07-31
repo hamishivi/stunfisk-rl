@@ -75,7 +75,7 @@ class BattleConverter:
             BattleOptions(
                 "atk",
                 -1,
-                2000,
+                200,
                 1,
                 lambda x: x.base_stats["atk"],
                 cfg.BATTLE.POKEMON.ATTACK,
@@ -83,7 +83,7 @@ class BattleConverter:
             BattleOptions(
                 "def",
                 -1,
-                2000,
+                250,
                 1,
                 lambda x: x.base_stats["def"],
                 cfg.BATTLE.POKEMON.DEFENCE,
@@ -91,7 +91,7 @@ class BattleConverter:
             BattleOptions(
                 "spa",
                 -1,
-                2000,
+                200,
                 1,
                 lambda x: x.base_stats["spa"],
                 cfg.BATTLE.POKEMON.SPECIAL_ATTACK,
@@ -99,7 +99,7 @@ class BattleConverter:
             BattleOptions(
                 "spd",
                 -1,
-                2000,
+                250,
                 1,
                 lambda x: x.base_stats["spd"],
                 cfg.BATTLE.POKEMON.SPECIAL_DEFENCE,
@@ -107,7 +107,7 @@ class BattleConverter:
             BattleOptions(
                 "spe",
                 -1,
-                2000,
+                200,
                 1,
                 lambda x: x.base_stats["spe"],
                 cfg.BATTLE.POKEMON.SPEED,
@@ -115,7 +115,7 @@ class BattleConverter:
             BattleOptions(
                 "hp",
                 -1,
-                2000,
+                300,
                 1,
                 lambda x: x.current_hp if x.current_hp else 0,
                 cfg.BATTLE.POKEMON.HP,

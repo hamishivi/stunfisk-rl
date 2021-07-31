@@ -1,6 +1,5 @@
 from gym import spaces
 from poke_env.player.env_player import Gen8EnvSinglePlayer
-from poke_env.player.random_player import RandomPlayer
 from poke_env.player.player import Player
 
 from battle_converter import BattleConverter
