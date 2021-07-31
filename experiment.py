@@ -67,9 +67,14 @@ def train_and_test(
         train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
     else:
         train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
+    model.load(
+        "/Users/hamishivison/Programming/stunfisk-data/sample_model",
+        custom_objects={"policy_kwargs": policy_kwargs},
+    )
     print("evaluating...")
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
+
     return rand_won, max_won, env_player, model
 
 
@@ -83,6 +88,7 @@ def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
     # results["max | rand"] = r
     # results["max | max"] = m
     return results
+
 
 # some of this cfg code was used for sweeps, but i removed this.
 raw_cfg = cfg_node_to_dict(cfg)

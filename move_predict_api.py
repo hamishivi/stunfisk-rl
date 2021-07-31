@@ -30,13 +30,13 @@ def flatten_dict(raw_cfg):
 
     return dict(items)
 
+
 raw_cfg = cfg_node_to_dict(cfg)
 cfg.merge_from_other_cfg(CfgNode(raw_cfg))
 cfg.merge_from_file("basic.yaml")
 
-def load_model(
-    model_file, cfg, battle_format
-):
+
+def load_model(model_file, cfg, battle_format):
     env_player = SimpleRLPlayer(cfg, battle_format=battle_format)
     policy_kwargs = dict(
         features_extractor_class=PokemonFeatureExtractor,
@@ -56,17 +56,24 @@ def load_model(
         learning_starts=cfg.DQN.LEARNING_STARTS,
         gamma=cfg.DQN.GAMMA,
         tensorboard_log="./dqn_pokemon_tensorboard/",
-        device='cpu'
+        device="cpu",
     )
-    #model.load(model_file)
+    model.load(model_file, custom_objects={"policy_kwargs": policy_kwargs})
     return model
 
-model = load_model('model', cfg, 'gen8anythinggoes')
+
+model = load_model(
+    "/Users/hamishivison/Programming/stunfisk-data/sample_model.zip",
+    cfg,
+    "gen8anythinggoes",
+)
+
 
 def predict(observation):
     q_values = model.predict(observation)
     print(q_values)
     return q_values.reshape(-1)
+
 
 # glue for gradio interface
 # yes, its monstrous due to the massive number of variables going into the model.
@@ -105,44 +112,52 @@ def predict(
     enemy_type2,
 ):
     obs = {
-        'ours.0.moves.0.bsp': poke_move_1_bsp,
-        'ours.0.moves.0.mm': poke_move_1_mm,
-        'ours.0.moves.1.bsp': poke_move_2_bsp,
-        'ours.0.moves.1.mm': poke_move_2_mm,
-        'ours.0.moves.2.bsp': poke_move_3_bsp,
-        'ours.0.moves.2.mm': poke_move_3_mm,
-        'ours.0.moves.3.bsp': poke_move_4_bsp,
-        'ours.0.moves.3.mm': poke_move_4_mm,
-        'ours.0.atk': poke_atk,
-        'ours.0.def': poke_def,
-        'ours.0.spa': poke_spa,
-        'ours.0.spd': poke_spd,
-        'ours.0.spe': poke_spe,
-        'ours.0.hp_frac': poke_hp_frac,
-        'ours.0.type1': TYPES[PokemonType.from_name(poke_type1)],
-        'ours.0.type2': TYPES[PokemonType.from_name(poke_type2)],
-        'enemy.0.moves.0.bsp': enemy_move_1_bsp,
-        'enemy.0.moves.0.mm': enemy_move_1_mm,
-        'enemy.0.moves.1.bsp': enemy_move_2_bsp,
-        'enemy.0.moves.1.mm': enemy_move_2_mm,
-        'enemy.0.moves.2.bsp': enemy_move_3_bsp,
-        'enemy.0.moves.2.mm': enemy_move_3_mm,
-        'enemy.0.moves.3.bsp': enemy_move_4_bsp,
-        'enemy.0.moves.3.mm': enemy_move_4_mm,
-        'enemy.0.atk': enemy_atk,
-        'enemy.0.def': enemy_def,
-        'enemy.0.spa': enemy_spa,
-        'enemy.0.spd': enemy_spd,
-        'enemy.0.spe': enemy_spe,
-        'enemy.0.hp_frac': enemy_hp_frac,
-        'enemy.0.type1': TYPES[PokemonType.from_name(enemy_type1)],
-        'enemy.0.type2': TYPES[PokemonType.from_name(enemy_type2)],
+        "ours.0.moves.0.bsp": poke_move_1_bsp,
+        "ours.0.moves.0.mm": poke_move_1_mm,
+        "ours.0.moves.1.bsp": poke_move_2_bsp,
+        "ours.0.moves.1.mm": poke_move_2_mm,
+        "ours.0.moves.2.bsp": poke_move_3_bsp,
+        "ours.0.moves.2.mm": poke_move_3_mm,
+        "ours.0.moves.3.bsp": poke_move_4_bsp,
+        "ours.0.moves.3.mm": poke_move_4_mm,
+        "ours.0.atk": poke_atk,
+        "ours.0.def": poke_def,
+        "ours.0.spa": poke_spa,
+        "ours.0.spd": poke_spd,
+        "ours.0.spe": poke_spe,
+        "ours.0.hp_frac": poke_hp_frac,
+        "ours.0.type1": TYPES[
+            PokemonType.from_name(poke_type1) if poke_type1 != "NONE" else None
+        ],
+        "ours.0.type2": TYPES[
+            PokemonType.from_name(poke_type2) if poke_type2 != "NONE" else None
+        ],
+        "enemy.0.moves.0.bsp": enemy_move_1_bsp,
+        "enemy.0.moves.0.mm": enemy_move_1_mm,
+        "enemy.0.moves.1.bsp": enemy_move_2_bsp,
+        "enemy.0.moves.1.mm": enemy_move_2_mm,
+        "enemy.0.moves.2.bsp": enemy_move_3_bsp,
+        "enemy.0.moves.2.mm": enemy_move_3_mm,
+        "enemy.0.moves.3.bsp": enemy_move_4_bsp,
+        "enemy.0.moves.3.mm": enemy_move_4_mm,
+        "enemy.0.atk": enemy_atk,
+        "enemy.0.def": enemy_def,
+        "enemy.0.spa": enemy_spa,
+        "enemy.0.spd": enemy_spd,
+        "enemy.0.spe": enemy_spe,
+        "enemy.0.hp_frac": enemy_hp_frac,
+        "enemy.0.type1": TYPES[
+            PokemonType.from_name(enemy_type1) if enemy_type1 != "NONE" else None
+        ],
+        "enemy.0.type2": TYPES[
+            PokemonType.from_name(enemy_type2) if enemy_type2 != "NONE" else None
+        ],
     }
     # I want all values, so i have to manually do some of the work stable baselines does
-    obs = { k: np.array(v).reshape(1, -1) for k, v in obs.items() }
-    obs = obs_as_tensor(obs,'cpu')
+    obs = {k: np.array(v).reshape(1, -1) for k, v in obs.items()}
+    obs = obs_as_tensor(obs, "cpu")
 
-    q_values = softmax(model.policy.q_net.forward(obs).reshape(-1), dim=0)
+    q_values = model.policy.q_net.forward(obs).reshape(-1)
     # map q value to thing.
     # from poke-env docs:
     # 0 <= action < 4:
@@ -159,75 +174,71 @@ def predict(
     # 16 <= action < 22
     #     The action - 16th available switch in battle.available_switches is executed.
     return {
-        'move 1': q_values[0].item(),
-        'move 2': q_values[1].item(),
-        'move 3': q_values[2].item(),
-        'move 4': q_values[3].item(),
-        'move 1 + z-move': q_values[4].item(),
-        'move 2 + z-move': q_values[5].item(),
-        'move 3 + z-move': q_values[6].item(),
-        'move 4 + z-move': q_values[7].item(),
-        'move 1 + mega-evo': q_values[8].item(),
-        'move 2 + mega-evo': q_values[9].item(),
-        'move 3 + mega-evo': q_values[10].item(),
-        'move 4 + mega-evo': q_values[11].item(),
-        'move 1 + dynamax': q_values[12].item(),
-        'move 2 + dynamax': q_values[13].item(),
-        'move 3 + dynamax': q_values[14].item(),
-        'move 4 + dynamax': q_values[15].item(),
-        'switch to pokemon 1': q_values[16].item(),
-        'switch to pokemon 2': q_values[17].item(),
-        'switch to pokemon 3': q_values[18].item(),
-        'switch to pokemon 4': q_values[19].item(),
-        'switch to pokemon 5': q_values[20].item(),
+        "move 1": q_values[0].item(),
+        "move 2": q_values[1].item(),
+        "move 3": q_values[2].item(),
+        "move 4": q_values[3].item(),
+        "move 1 + z-move": q_values[4].item(),
+        "move 2 + z-move": q_values[5].item(),
+        "move 3 + z-move": q_values[6].item(),
+        "move 4 + z-move": q_values[7].item(),
+        "move 1 + mega-evo": q_values[8].item(),
+        "move 2 + mega-evo": q_values[9].item(),
+        "move 3 + mega-evo": q_values[10].item(),
+        "move 4 + mega-evo": q_values[11].item(),
+        "move 1 + dynamax": q_values[12].item(),
+        "move 2 + dynamax": q_values[13].item(),
+        "move 3 + dynamax": q_values[14].item(),
+        "move 4 + dynamax": q_values[15].item(),
+        "switch to pokemon 1": q_values[16].item(),
+        "switch to pokemon 2": q_values[17].item(),
+        "switch to pokemon 3": q_values[18].item(),
+        "switch to pokemon 4": q_values[19].item(),
+        "switch to pokemon 5": q_values[20].item(),
     }
+
 
 type_strings = [str(t).split()[0] for t in TYPES.keys()]
 
 gr_inputs = [
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200),
-    gr.inputs.Slider(0, 250),
-    gr.inputs.Slider(0, 200),
-    gr.inputs.Slider(0, 250),
-    gr.inputs.Slider(0, 200),
-    gr.inputs.Slider(0, 1),
-    gr.inputs.Dropdown(type_strings),
-    gr.inputs.Dropdown(type_strings),
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200, 1),
-    gr.inputs.Slider(0, 5, 0.5),
-    gr.inputs.Slider(0, 200),
-    gr.inputs.Slider(0, 250),
-    gr.inputs.Slider(0, 200),
-    gr.inputs.Slider(0, 250),
-    gr.inputs.Slider(0, 200),
-    gr.inputs.Slider(0, 1),
-    gr.inputs.Dropdown(type_strings),
-    gr.inputs.Dropdown(type_strings),
+    gr.inputs.Slider(0, 200, 1, default=70),
+    gr.inputs.Slider(0, 5, 0.5, default=1),
+    gr.inputs.Slider(0, 200, 1, default=80),
+    gr.inputs.Slider(0, 5, 0.5, default=2),
+    gr.inputs.Slider(0, 200, 1, default=100),
+    gr.inputs.Slider(0, 5, 0.5, default=1),
+    gr.inputs.Slider(0, 200, 1, default=70),
+    gr.inputs.Slider(0, 5, 0.5, default=1),
+    gr.inputs.Slider(0, 200, default=80),
+    gr.inputs.Slider(0, 250, default=100),
+    gr.inputs.Slider(0, 200, default=50),
+    gr.inputs.Slider(0, 250, default=80),
+    gr.inputs.Slider(0, 200, default=70),
+    gr.inputs.Slider(0, 1, default=1),
+    gr.inputs.Dropdown(type_strings, default="NORMAL"),
+    gr.inputs.Dropdown(type_strings, default="NONE"),
+    gr.inputs.Slider(0, 200, 1, default=70),
+    gr.inputs.Slider(0, 5, 0.5, default=1),
+    gr.inputs.Slider(0, 200, 1, default=80),
+    gr.inputs.Slider(0, 5, 0.5, default=1),
+    gr.inputs.Slider(0, 200, 1, default=120),
+    gr.inputs.Slider(0, 5, 0.5, default=2),
+    gr.inputs.Slider(0, 200, 1, default=70),
+    gr.inputs.Slider(0, 5, 0.5, default=1),
+    gr.inputs.Slider(0, 200, default=100),
+    gr.inputs.Slider(0, 250, default=50),
+    gr.inputs.Slider(0, 200, default=80),
+    gr.inputs.Slider(0, 250, default=70),
+    gr.inputs.Slider(0, 200, default=65),
+    gr.inputs.Slider(0, 1, default=1),
+    gr.inputs.Dropdown(type_strings, default="NORMAL"),
+    gr.inputs.Dropdown(type_strings, default="NONE"),
 ]
 
 
-gr_outputs = [
-    gr.outputs.Label()
-]
+gr_outputs = [gr.outputs.Label()]
 
 
-iface = gr.Interface(
-  fn=predict, 
-  inputs=gr_inputs,
-  outputs=gr_outputs)
+iface = gr.Interface(fn=predict, inputs=gr_inputs, outputs=gr_outputs, live=True)
 
 iface.launch()
