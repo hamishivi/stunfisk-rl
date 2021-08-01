@@ -58,20 +58,13 @@ def load_model(model_file, cfg, battle_format):
         tensorboard_log="./dqn_pokemon_tensorboard/",
         device="cpu",
     )
-    model.load(model_file, custom_objects={"policy_kwargs": policy_kwargs})
+    model = model.load(model_file, custom_objects={"policy_kwargs": policy_kwargs})
     return model
 
 
 model = load_model(
     "/Users/hamishivison/Programming/stunfisk-data/gen5.zip", cfg, "gen5randombattle"
 )
-
-
-def predict(observation):
-    q_values = model.predict(observation)
-    print(q_values)
-    return q_values.reshape(-1)
-
 
 # glue for gradio interface
 # yes, its monstrous due to the massive number of variables going into the model.
@@ -155,18 +148,21 @@ def predict(
     obs = {k: np.array(v).reshape(1, -1) for k, v in obs.items()}
     obs = obs_as_tensor(obs, "cpu")
 
-    q_values = model.policy.q_net.forward(obs).reshape(-1)
+    q_values = (
+        model.policy.q_net.forward(obs).reshape(-1)
+        / model.policy.q_net.forward(obs).reshape(-1).sum()
+    )
     # map q value to action labels.
     return {
         "move 1": q_values[0].item(),
         "move 2": q_values[1].item(),
         "move 3": q_values[2].item(),
         "move 4": q_values[3].item(),
-        # "switch to pokemon 1": q_values[4].item(),
-        # "switch to pokemon 2": q_values[5].item(),
-        # "switch to pokemon 3": q_values[6].item(),
-        # "switch to pokemon 4": q_values[7].item(),
-        # "switch to pokemon 5": q_values[8].item(),
+        "switch to pokemon 1": q_values[4].item(),
+        "switch to pokemon 2": q_values[5].item(),
+        "switch to pokemon 3": q_values[6].item(),
+        "switch to pokemon 4": q_values[7].item(),
+        "switch to pokemon 5": q_values[8].item(),
     }
 
 

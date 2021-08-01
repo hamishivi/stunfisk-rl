@@ -72,7 +72,7 @@ def train_and_test(
     #     custom_objects={"policy_kwargs": policy_kwargs},
     # )
     print("evaluating...")
-    model.save("test")
+    model.save("gen5")
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
 
