@@ -62,9 +62,7 @@ def load_model(model_file, cfg, battle_format):
     return model
 
 
-model = load_model(
-    "/Users/hamishivison/Programming/stunfisk-data/gen5.zip", cfg, "gen5randombattle"
-)
+model = load_model("gen5-2", cfg, "gen5randombattle")
 
 # glue for gradio interface
 # yes, its monstrous due to the massive number of variables going into the model.
@@ -223,6 +221,15 @@ gr_inputs = [
 gr_outputs = [gr.outputs.Label()]
 
 
-iface = gr.Interface(fn=predict, inputs=gr_inputs, outputs=gr_outputs, live=True)
+iface = gr.Interface(
+    fn=predict,
+    inputs=gr_inputs,
+    outputs=gr_outputs,
+    title="Pokemon Battle: Next Action Prediction",
+    description="This predicts the best next action for a pokemon battle AI based on the move stats provided. Change the move stats to see the prediction change. Note that the predicted values are normalised q-values, not probabilities.",
+    live=True,
+    allow_flagging=False,
+    theme="compact",
+)
 
 iface.launch()
