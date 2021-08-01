@@ -10,7 +10,7 @@ from poke_env.environment.pokemon_type import PokemonType
 import gradio as gr
 import numpy as np
 from stable_baselines3.common.utils import obs_as_tensor
-from torch.nn.functional import softmax
+import urllib.request
 
 
 def cfg_node_to_dict(cfg):
@@ -62,7 +62,10 @@ def load_model(model_file, cfg, battle_format):
     return model
 
 
-model = load_model("gen5-2", cfg, "gen5randombattle")
+urllib.request.urlretrieve(
+    "https://stunfisk-gradio.s3.ap-southeast-2.amazonaws.com/gen5-2.zip", "model.zip"
+)
+model = load_model("model", cfg, "gen5randombattle")
 
 # glue for gradio interface
 # yes, its monstrous due to the massive number of variables going into the model.

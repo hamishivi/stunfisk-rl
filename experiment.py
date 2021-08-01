@@ -67,12 +67,8 @@ def train_and_test(
         train(env_player, rand_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
     else:
         train(env_player, max_opponent, model, timesteps=cfg.DQN.TRAIN_TIMESTEPS)
-    # model.load(
-    #     "/Users/hamishivison/Programming/stunfisk-data/gen5",
-    #     custom_objects={"policy_kwargs": policy_kwargs},
-    # )
     print("evaluating...")
-    model.save("gen5")
+    # model.save("gen5")
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
 
@@ -85,9 +81,9 @@ def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
     r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team)
     results["rand | rand"] = r
     results["rand | max"] = m
-    # r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team, train_rand=False)
-    # results["max | rand"] = r
-    # results["max | max"] = m
+    r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team, train_rand=False)
+    results["max | rand"] = r
+    results["max | max"] = m
     return results
 
 
@@ -96,7 +92,7 @@ raw_cfg = cfg_node_to_dict(cfg)
 raw_cfg_flat = flatten_dict(raw_cfg)
 cfg.merge_from_other_cfg(CfgNode(raw_cfg))
 # uncomment to use raml
-cfg.merge_from_file("basic.yaml")
+# cfg.merge_from_file("basic.yaml")
 results = {}
 # tests:
 # grookey vs youngster jake rand and max

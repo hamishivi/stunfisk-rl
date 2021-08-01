@@ -1,13 +1,6 @@
-import asyncio
-
-from rl_player import SimpleRLPlayer, EvaluatePlayer
-from stable_baselines3 import DQN
-from stable_baselines3.dqn import MlpPolicy
+from rl_player import EvaluatePlayer
 from stable_baselines3.common.evaluation import evaluate_policy
-from poke_env.player.random_player import RandomPlayer
 from poke_env.player_configuration import PlayerConfiguration
-
-from max_player import MaxDamagePlayer
 
 
 def train(env_player, opponent, model, timesteps=100000):
@@ -38,25 +31,3 @@ async def play_human(env_player, model):
         player_configuration=PlayerConfiguration("ROBOHAMISH", "robotmish"),
     )
     await player.accept_challenges(None, 1)
-
-
-if __name__ == "__main__":
-    from config import cfg
-
-    env_player = SimpleRLPlayer(cfg, battle_format="gen8randombattle")
-    opponent = MaxDamagePlayer(battle_format="gen8randombattle")
-    model = DQN(
-        MlpPolicy,
-        env_player,
-        learning_rate=0.00025,
-        buffer_size=10000,
-        learning_starts=1000,
-        gamma=0.5,
-        verbose=1,
-    )
-    print("training")
-    train(env_player, opponent, model)
-    print("testing")
-    won = test(env_player, opponent, model)
-    print(f"In testing we won {won*100}% of matches")
-    # asyncio.get_event_loop().run_until_complete(play_human(env_player, model))

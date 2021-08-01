@@ -1,7 +1,6 @@
 """
 Utilities for converting pokemon and battle-related items to tensors.
 """
-import numpy as np
 from data import TYPES, MOVE_CATS, GENDERS
 from gym import spaces
 

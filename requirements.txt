@@ -1,6 +1,5 @@
 poke-env
 stable-baselines3
 yacs
-http://download.pytorch.org/whl/cpu/torch-1.9.0%2Bcpu-cp39-cp39-linux_x86_64.whl
 tensorboard
 gradio
