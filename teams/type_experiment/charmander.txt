@@ -1,7 +1,0 @@
-Charmander
-Ability: Blaze
-EVs: 1 HP
-- Scratch
-- Growl
-- Thunder Punch
-- Crunch

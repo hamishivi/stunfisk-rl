@@ -1,6 +1,0 @@
-Squirtle
-Ability: Torrent
-EVs: 1 HP
-- Tackle
-- Iron Defense
-- Water Gun
