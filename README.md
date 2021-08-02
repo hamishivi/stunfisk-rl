@@ -2,7 +2,7 @@
 
 This is a simple little project to investigate how well RL can do on pokemon, relying mostly on the great work of the poke-env library. I've applied it to stable-baselines3, allowing easy testing of a variety of RL algorithms.
 
-Check out my blog post on this [here]().
+Check out my blog post on this [here](https://ivison.id.au/2021/08/02/pokerl/).
 
 ## Setup
 
