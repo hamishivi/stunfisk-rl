@@ -1,4 +1,5 @@
 from gym import spaces
+from gym.spaces import flatten
 from poke_env.player.env_player import Gen8EnvSinglePlayer
 from poke_env.player.player import Player
 
@@ -44,5 +45,5 @@ class EvaluatePlayer(Player):
 
     def choose_move(self, battle):
         embed_battle = self.env_player.embed_battle(battle)
-        action, _ = self.model.predict(embed_battle.reshape(1, -1), deterministic=True)
+        action, _ = self.model.predict(embed_battle, deterministic=True)
         return self.env_player._action_to_move(action[0], battle)

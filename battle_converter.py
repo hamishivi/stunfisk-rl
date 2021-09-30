@@ -3,6 +3,7 @@ Utilities for converting pokemon and battle-related items to tensors.
 """
 from data import TYPES, MOVE_CATS, GENDERS
 from gym import spaces
+import numpy as np
 
 
 class BattleOptions:
@@ -11,7 +12,9 @@ class BattleOptions:
     This helps us with configuring tensor creation via config
     """
 
-    def __init__(self, name, lower_bound, upper_bound, shape, extract_func, active):
+    def __init__(
+        self, name, lower_bound, upper_bound, shape, extract_func, active, cat=None
+    ):
         self.name = name
         self.l = lower_bound
         self.u = upper_bound
@@ -19,6 +22,7 @@ class BattleOptions:
         self.s = shape
         # a bit funky, but oh well
         self.e = extract_func
+        self.cat = cat  # categorical feature
 
     @property
     def shape(self):
@@ -38,8 +42,32 @@ class BattleOptions:
 
     def extract(self, *args, **kwargs):
         x = self.e(*args, **kwargs)
+        if self.cat:
+            return np.eye(len(self.cat))[x if x else self.cat[None]]
         # if cant extract, return lower bound
-        return x if x is not None else self.l
+        val = x if x is not None else self.l
+        # normalise
+        return (val - self.l) / (self.u - self.l)
+
+
+class CategoricalBattleOption(BattleOptions):
+    """
+    For categories, all we really need is the data dict
+    """
+
+    def __init__(self, name, category_data, extract_func, active):
+        self.name = name
+        self.l = np.zeros(len(category_data))
+        self.u = np.ones(len(category_data))
+        self.a = active
+        self.s = len(category_data)
+        # a bit funky, but oh well
+        self.e = lambda x: category_data[extract_func(x)]
+        self.cat = category_data
+
+    def extract(self, *args, **kwargs):
+        x = self.e(*args, **kwargs)
+        return np.eye(len(self.cat))[x if x else self.cat[None]]
 
 
 class BattleConverter:
@@ -58,11 +86,11 @@ class BattleConverter:
             BattleOptions(
                 "pri", -1, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
             ),
-            BattleOptions(
-                "cat", 0, 1, 1, lambda x: MOVE_CATS[x.category], cfg.BATTLE.MOVE.CAT
+            CategoricalBattleOption(
+                "cat", MOVE_CATS, lambda x: x.category, cfg.BATTLE.MOVE.CAT
             ),
-            BattleOptions(
-                "type", 0, 1, 1, lambda x: TYPES[x.type], cfg.BATTLE.MOVE.TYPE
+            CategoricalBattleOption(
+                "type", TYPES, lambda x: x.type, cfg.BATTLE.MOVE.TYPE
             ),
             BattleOptions("mm", 1, 5, 1, lambda x, d: d(x), cfg.BATTLE.MOVE.MOVE_MULT),
         ]
@@ -130,23 +158,16 @@ class BattleConverter:
             BattleOptions(
                 "att", -1, 1, 1, lambda x: int(x.fainted), cfg.BATTLE.POKEMON.FAINTED
             ),
-            BattleOptions(
-                "gender",
-                0,
-                1,
-                1,
-                lambda x: GENDERS[x.gender],
-                cfg.BATTLE.POKEMON.GENDER,
+            CategoricalBattleOption(
+                "gender", GENDERS, lambda x: x.gender, cfg.BATTLE.POKEMON.GENDER
             ),
-            BattleOptions(
-                "type1", 0, 1, 1, lambda x: TYPES[x.types[0]], cfg.BATTLE.POKEMON.TYPE1
+            CategoricalBattleOption(
+                "type1", TYPES, lambda x: x.types[0], cfg.BATTLE.POKEMON.TYPE1
             ),
-            BattleOptions(
+            CategoricalBattleOption(
                 "type2",
-                0,
-                1,
-                1,
-                lambda x: TYPES[x.types[1] if len(x.types) > 1 else None],
+                TYPES,
+                lambda x: x.types[1] if len(x.types) > 1 else None,
                 cfg.BATTLE.POKEMON.TYPE2,
             ),
         ]

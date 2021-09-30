@@ -34,7 +34,7 @@ _C.BATTLE.TEAM.SIZE = 1
 ## Reward options
 _C.REWARD = CN()
 _C.REWARD.FAINTED = 50
-_C.REWARD.HP = 10
+_C.REWARD.HP = 1000
 _C.REWARD.VICTORY = 5000
 
 ## DQN params

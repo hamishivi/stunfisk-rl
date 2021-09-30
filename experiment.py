@@ -1,13 +1,29 @@
+import warnings
+
+warnings.simplefilter(action="ignore", category=FutureWarning)
+
 from yacs.config import CfgNode
 from config import cfg
 from poke_env.player.random_player import RandomPlayer
-from stable_baselines3 import DQN
-from stable_baselines3.dqn import MlpPolicy as DqnMlpPolicy
+from stable_baselines import DQN
+from stable_baselines.deepq.policies import MlpPolicy as DqnMlpPolicy
+from stable_baselines.deepq.policies import FeedForwardPolicy
 from max_player import MaxDamagePlayer
 from rl_player import SimpleRLPlayer
-from pokefeat_extractor import PokemonFeatureExtractor
 from battle_env import train, test
 import yaml
+from gym.wrappers import FlattenObservation
+
+
+class CustomDQNPolicy(FeedForwardPolicy):
+    def __init__(self, *args, **kwargs):
+        super(CustomDQNPolicy, self).__init__(
+            *args,
+            **kwargs,
+            layers=[256, 128, 64],
+            layer_norm=True,
+            feature_extraction="mlp",
+        )
 
 
 def cfg_node_to_dict(cfg):
@@ -39,22 +55,12 @@ def train_and_test(
     if enemy_team_file:
         enemy_team = open(enemy_team_file, "r").read()
 
-    env_player = SimpleRLPlayer(cfg, battle_format=battle_format, team=team)
-    max_opponent = MaxDamagePlayer(battle_format=battle_format, team=enemy_team)
-    rand_opponent = RandomPlayer(battle_format=battle_format, team=enemy_team)
-    policy_kwargs = dict(
-        features_extractor_class=PokemonFeatureExtractor,
-        net_arch=[cfg.NETWORK.POKEMON_FEATURE_SIZE] + [1000, 500, 250, 100, 50],
-        features_extractor_kwargs=dict(
-            poke_feats=env_player.bc.poke_feats,
-            move_feats=env_player.bc.move_feats,
-            features_dim=cfg.NETWORK.POKEMON_FEATURE_SIZE,
-        ),
-    )
+    env_player = FlattenObservation(SimpleRLPlayer(cfg, battle_format=battle_format))
+    max_opponent = MaxDamagePlayer(battle_format=battle_format)
+    rand_opponent = RandomPlayer(battle_format=battle_format)
     model = DQN(
-        DqnMlpPolicy,
+        CustomDQNPolicy,
         env_player,
-        policy_kwargs=policy_kwargs,
         learning_rate=cfg.DQN.LEARNING_RATE,
         buffer_size=cfg.DQN.BUFFER_SIZE,
         learning_starts=cfg.DQN.LEARNING_STARTS,
@@ -81,6 +87,7 @@ def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
     r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team)
     results["rand | rand"] = r
     results["rand | max"] = m
+    print(results)
     r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team, train_rand=False)
     results["max | rand"] = r
     results["max | max"] = m

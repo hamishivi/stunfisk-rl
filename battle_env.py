@@ -1,6 +1,7 @@
 from rl_player import EvaluatePlayer
-from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines.common.evaluation import evaluate_policy
 from poke_env.player_configuration import PlayerConfiguration
+from gym.wrappers import FlattenObservation
 
 
 def train(env_player, opponent, model, timesteps=100000):
@@ -15,7 +16,7 @@ def train(env_player, opponent, model, timesteps=100000):
 def test(env_player, opponent, model, eval_eps=100):
     def evaluate(player, model):
         player.reset_battles()
-        evaluate_policy(model, player, n_eval_episodes=eval_eps)
+        evaluate_policy(model, FlattenObservation(player), n_eval_episodes=eval_eps)
         # print(f"{algo_name} Evaluation: {player.n_won_battles} victories out of {100} episodes")
 
     env_player.play_against(

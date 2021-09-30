@@ -1,7 +1,7 @@
 from yacs.config import CfgNode
 from config import cfg
-from stable_baselines3 import DQN
-from stable_baselines3.dqn import MlpPolicy as DqnMlpPolicy
+from stable_baselines import DQN
+from stable_baselines.dqn import MlpPolicy as DqnMlpPolicy
 from rl_player import SimpleRLPlayer
 from pokefeat_extractor import PokemonFeatureExtractor
 import yaml
@@ -9,7 +9,7 @@ from data import TYPES
 from poke_env.environment.pokemon_type import PokemonType
 import gradio as gr
 import numpy as np
-from stable_baselines3.common.utils import obs_as_tensor
+from stable_baselines.common.utils import obs_as_tensor
 import urllib.request
 
 

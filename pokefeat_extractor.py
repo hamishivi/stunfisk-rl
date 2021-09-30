@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from typing import List, Dict
 
-from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
+from stable_baselines.common.torch_layers import BaseFeaturesExtractor
 from battle_converter import BattleOptions
 
 
