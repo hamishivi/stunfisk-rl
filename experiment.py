@@ -6,7 +6,7 @@ from yacs.config import CfgNode
 from config import cfg
 from poke_env.player.random_player import RandomPlayer
 from stable_baselines import DQN
-from stable_baselines.deepq.policies import MlpPolicy as DqnMlpPolicy
+from stable_baselines.deepq.policies import MlpPolicy
 from stable_baselines.deepq.policies import FeedForwardPolicy
 from max_player import MaxDamagePlayer
 from rl_player import SimpleRLPlayer
@@ -59,7 +59,7 @@ def train_and_test(
     max_opponent = MaxDamagePlayer(battle_format=battle_format)
     rand_opponent = RandomPlayer(battle_format=battle_format)
     model = DQN(
-        CustomDQNPolicy,
+        MlpPolicy,
         env_player,
         learning_rate=cfg.DQN.LEARNING_RATE,
         buffer_size=cfg.DQN.BUFFER_SIZE,
@@ -78,28 +78,46 @@ def train_and_test(
     rand_won = test(env_player, rand_opponent, model)
     max_won = test(env_player, max_opponent, model)
 
+    model.save('pokemon_trained.model')
+
     return rand_won, max_won, env_player, model
 
 
 def run_exp(exp_name, team, enemy_team, battle_format="gen8anythinggoes"):
     print(f"Running {exp_name}")
-    results = {}
-    r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team)
-    results["rand | rand"] = r
-    results["rand | max"] = m
-    print(results)
+    #results = {}
+    #r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team)
+    #results["rand | rand"] = r
+    #results["rand | max"] = m
+    #print(results)
     r, m, _, _ = train_and_test(cfg, battle_format, team, enemy_team, train_rand=False)
     results["max | rand"] = r
     results["max | max"] = m
     return results
 
+def unflatten_dict(raw_config):
+    resultDict = dict()
+    for key, value in raw_config.items():
+        parts = key.split("-")
+        d = resultDict
+        for part in parts[:-1]:
+            if part not in d:
+                d[part] = dict()
+            d = d[part]
+        d[parts[-1]] = value
+    return resultDict
 
 # some of this cfg code was used for sweeps, but i removed this.
+
 raw_cfg = cfg_node_to_dict(cfg)
 raw_cfg_flat = flatten_dict(raw_cfg)
+import wandb
+wandb.init(config=raw_cfg_flat, project="stunfisk-rl")
+# load in wandb config, merge into cfg
+raw_cfg = unflatten_dict(dict(wandb.config))
 cfg.merge_from_other_cfg(CfgNode(raw_cfg))
 # uncomment to use raml
-# cfg.merge_from_file("basic.yaml")
+#cfg.merge_from_file("basic.yaml")
 results = {}
 # tests:
 # grookey vs youngster jake rand and max
@@ -116,3 +134,4 @@ results["Rand vs Rand"] = run_exp(
 )
 # do what you want with results!
 print(results)
+wandb.log({"won": results["max | max"]})

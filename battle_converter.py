@@ -77,14 +77,14 @@ class BattleConverter:
         # move features
         self.move_feats = [
             BattleOptions(
-                "acc", -1, 100, 1, lambda x: x.accuracy, cfg.BATTLE.MOVE.ACCURACY
+                "acc", 0, 100, 1, lambda x: x.accuracy, cfg.BATTLE.MOVE.ACCURACY
             ),
             BattleOptions(
-                "bsp", -1, 200, 1, lambda x: x.base_power, cfg.BATTLE.MOVE.BASE_POWER
+                "bsp", 0, 200, 1, lambda x: x.base_power, cfg.BATTLE.MOVE.BASE_POWER
             ),
-            BattleOptions("pp", -1, 50, 1, lambda x: x.current_pp, cfg.BATTLE.MOVE.PP),
+            BattleOptions("pp", 0, 50, 1, lambda x: x.current_pp, cfg.BATTLE.MOVE.PP),
             BattleOptions(
-                "pri", -1, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
+                "pri", 0, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
             ),
             CategoricalBattleOption(
                 "cat", MOVE_CATS, lambda x: x.category, cfg.BATTLE.MOVE.CAT
@@ -101,7 +101,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "atk",
-                -1,
+                0,
                 200,
                 1,
                 lambda x: x.base_stats["atk"],
@@ -109,7 +109,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "def",
-                -1,
+                0,
                 250,
                 1,
                 lambda x: x.base_stats["def"],
@@ -117,7 +117,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spa",
-                -1,
+                0,
                 200,
                 1,
                 lambda x: x.base_stats["spa"],
@@ -125,7 +125,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spd",
-                -1,
+                0,
                 250,
                 1,
                 lambda x: x.base_stats["spd"],
@@ -133,7 +133,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spe",
-                -1,
+                0,
                 200,
                 1,
                 lambda x: x.base_stats["spe"],
@@ -141,7 +141,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "hp",
-                -1,
+                0,
                 300,
                 1,
                 lambda x: x.current_hp if x.current_hp else 0,
@@ -149,14 +149,14 @@ class BattleConverter:
             ),
             BattleOptions(
                 "hp_frac",
-                -1,
+                0,
                 1,
                 1,
                 lambda x: x.current_hp_fraction,
                 cfg.BATTLE.POKEMON.HP_FRACTION,
             ),
             BattleOptions(
-                "att", -1, 1, 1, lambda x: int(x.fainted), cfg.BATTLE.POKEMON.FAINTED
+                "fainted", 0, 1, 1, lambda x: int(x.fainted), cfg.BATTLE.POKEMON.FAINTED
             ),
             CategoricalBattleOption(
                 "gender", GENDERS, lambda x: x.gender, cfg.BATTLE.POKEMON.GENDER
