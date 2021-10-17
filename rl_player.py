@@ -24,6 +24,9 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
     def action_space(self):
         return self.action_box
 
+    def index_to_move(self, action_index, battle):
+        return self._action_to_move(action_index, battle)
+
     def embed_battle(self, battle):
         return self.bc.battle_to_tensor(battle)
 
@@ -44,6 +47,7 @@ class EvaluatePlayer(Player):
         self.model = model
 
     def choose_move(self, battle):
-        embed_battle = self.env_player.embed_battle(battle)
+        # embed, and flatten the result
+        embed_battle = self.env_player.observation(self.env_player.embed_battle(battle))
         action, _ = self.model.predict(embed_battle, deterministic=True)
-        return self.env_player._action_to_move(action[0], battle)
+        return self.env_player.index_to_move(action, battle)
