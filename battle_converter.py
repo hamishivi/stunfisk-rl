@@ -3,6 +3,7 @@ Utilities for converting pokemon and battle-related items to tensors.
 """
 from data import TYPES, MOVE_CATS, GENDERS
 from gym import spaces
+import numpy as np
 
 
 class BattleOptions:
@@ -11,7 +12,9 @@ class BattleOptions:
     This helps us with configuring tensor creation via config
     """
 
-    def __init__(self, name, lower_bound, upper_bound, shape, extract_func, active):
+    def __init__(
+        self, name, lower_bound, upper_bound, shape, extract_func, active
+    ):
         self.name = name
         self.l = lower_bound
         self.u = upper_bound
@@ -19,6 +22,7 @@ class BattleOptions:
         self.s = shape
         # a bit funky, but oh well
         self.e = extract_func
+        self.gym_space = spaces.Box(low=lower_bound, high=upper_bound, shape=(shape,))
 
     @property
     def shape(self):
@@ -36,10 +40,37 @@ class BattleOptions:
     def active(self):
         return self.a
 
+    @property
+    def space(self):
+        return self.gym_space
+
     def extract(self, *args, **kwargs):
         x = self.e(*args, **kwargs)
         # if cant extract, return lower bound
-        return x if x is not None else self.l
+        val = x if x is not None else self.l
+        # normalise, since stable baselines wont do this for us.
+        return (val - self.l) / (self.u - self.l)
+
+
+class CategoricalBattleOption(BattleOptions):
+    """
+    For categories, all we really need is the data dict
+    """
+
+    def __init__(self, name, category_data, extract_func, active):
+        self.name = name
+        self.l = category_data[None]
+        self.u = category_data[None]
+        self.a = active
+        self.s = len(category_data)
+        # a bit funky, but oh well
+        self.e = lambda x: category_data[extract_func(x)]
+        self.cat = category_data
+        self.gym_space = spaces.Discrete(len(category_data))
+
+    def extract(self, *args, **kwargs):
+        return self.e(*args, **kwargs) # the stable baselines prepro will one hot for us!
+        # return np.eye(len(self.cat))[x if x else self.cat[None]]
 
 
 class BattleConverter:
@@ -49,20 +80,20 @@ class BattleConverter:
         # move features
         self.move_feats = [
             BattleOptions(
-                "acc", -1, 100, 1, lambda x: x.accuracy, cfg.BATTLE.MOVE.ACCURACY
+                "acc", 0, 100, 1, lambda x: x.accuracy, cfg.BATTLE.MOVE.ACCURACY
             ),
             BattleOptions(
-                "bsp", -1, 200, 1, lambda x: x.base_power, cfg.BATTLE.MOVE.BASE_POWER
+                "bsp", 0, 200, 1, lambda x: x.base_power, cfg.BATTLE.MOVE.BASE_POWER
             ),
-            BattleOptions("pp", -1, 50, 1, lambda x: x.current_pp, cfg.BATTLE.MOVE.PP),
+            BattleOptions("pp", 0, 50, 1, lambda x: x.current_pp, cfg.BATTLE.MOVE.PP),
             BattleOptions(
-                "pri", -1, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
+                "pri", 0, 14, 1, lambda x: x.priority + 7, cfg.BATTLE.MOVE.PRIORITY
             ),
-            BattleOptions(
-                "cat", 0, 1, 1, lambda x: MOVE_CATS[x.category], cfg.BATTLE.MOVE.CAT
+            CategoricalBattleOption(
+                "cat", MOVE_CATS, lambda x: x.category, cfg.BATTLE.MOVE.CAT
             ),
-            BattleOptions(
-                "type", 0, 1, 1, lambda x: TYPES[x.type], cfg.BATTLE.MOVE.TYPE
+            CategoricalBattleOption(
+                "type", TYPES, lambda x: x.type, cfg.BATTLE.MOVE.TYPE
             ),
             BattleOptions("mm", 1, 5, 1, lambda x, d: d(x), cfg.BATTLE.MOVE.MOVE_MULT),
         ]
@@ -73,7 +104,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "atk",
-                -1,
+                0,
                 200,
                 1,
                 lambda x: x.base_stats["atk"],
@@ -81,7 +112,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "def",
-                -1,
+                0,
                 250,
                 1,
                 lambda x: x.base_stats["def"],
@@ -89,7 +120,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spa",
-                -1,
+                0,
                 200,
                 1,
                 lambda x: x.base_stats["spa"],
@@ -97,7 +128,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spd",
-                -1,
+                0,
                 250,
                 1,
                 lambda x: x.base_stats["spd"],
@@ -105,7 +136,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "spe",
-                -1,
+                0,
                 200,
                 1,
                 lambda x: x.base_stats["spe"],
@@ -113,7 +144,7 @@ class BattleConverter:
             ),
             BattleOptions(
                 "hp",
-                -1,
+                0,
                 300,
                 1,
                 lambda x: x.current_hp if x.current_hp else 0,
@@ -121,32 +152,25 @@ class BattleConverter:
             ),
             BattleOptions(
                 "hp_frac",
-                -1,
+                0,
                 1,
                 1,
                 lambda x: x.current_hp_fraction,
                 cfg.BATTLE.POKEMON.HP_FRACTION,
             ),
             BattleOptions(
-                "att", -1, 1, 1, lambda x: int(x.fainted), cfg.BATTLE.POKEMON.FAINTED
+                "fainted", 0, 1, 1, lambda x: int(x.fainted), cfg.BATTLE.POKEMON.FAINTED
             ),
-            BattleOptions(
-                "gender",
-                0,
-                1,
-                1,
-                lambda x: GENDERS[x.gender],
-                cfg.BATTLE.POKEMON.GENDER,
+            CategoricalBattleOption(
+                "gender", GENDERS, lambda x: x.gender, cfg.BATTLE.POKEMON.GENDER
             ),
-            BattleOptions(
-                "type1", 0, 1, 1, lambda x: TYPES[x.types[0]], cfg.BATTLE.POKEMON.TYPE1
+            CategoricalBattleOption(
+                "type1", TYPES, lambda x: x.types[0], cfg.BATTLE.POKEMON.TYPE1
             ),
-            BattleOptions(
+            CategoricalBattleOption(
                 "type2",
-                0,
-                1,
-                1,
-                lambda x: TYPES[x.types[1] if len(x.types) > 1 else None],
+                TYPES,
+                lambda x: x.types[1] if len(x.types) > 1 else None,
                 cfg.BATTLE.POKEMON.TYPE2,
             ),
         ]
@@ -166,28 +190,28 @@ class BattleConverter:
         od = {}
         for i in range(1):
             for k, v in self.get_pokemon_obs_dict().items():
-                od[f"ours.{i}.{k}"] = v
+                od[f"ours-{i}-{k}"] = v
         for i in range(1):
             for k, v in self.get_pokemon_obs_dict().items():
-                od[f"enemy.{i}.{k}"] = v
+                od[f"enemy-{i}-{k}"] = v
         return spaces.Dict(od)
 
     def get_pokemon_obs_dict(self):
         # dict representing a single pokemon
         od = {
-            m.name: spaces.Box(low=m.lower_bound, high=m.upper_bound, shape=(m.shape,))
+            m.name: m.space
             for m in self.poke_feats
             if m.active
         }
         for i in range(self.num_moves):
             for k, v in self.get_move_obs_dict().items():
-                od[f"moves.{i}.{k}"] = v
+                od[f"moves-{i}-{k}"] = v
         return od
 
     def get_move_obs_dict(self):
         # dict representing a single move
         return {
-            m.name: spaces.Box(low=m.lower_bound, high=m.upper_bound, shape=(m.shape,))
+            m.name: m.space
             for m in self.move_feats
             if m.active
         }
@@ -213,13 +237,13 @@ class BattleConverter:
         move_counter = 0
         for i, m in enumerate(poke_obj.moves):
             for k, v in self._extract_move(poke_obj.moves[m], enemy_type).items():
-                vals[f"moves.{i}.{k}"] = v
+                vals[f"moves-{i}-{k}"] = v
             move_counter += 1
             if move_counter >= self.num_moves:
                 break
         while move_counter < self.num_moves:
             for k, v in self._generate_dummy_move().items():
-                vals[f"moves.{move_counter}.{k}"] = v
+                vals[f"moves-{move_counter}-{k}"] = v
             move_counter += 1
         return vals
 
@@ -227,7 +251,7 @@ class BattleConverter:
         vals = {f.name: f.lower_bound for f in self.poke_feats if f.active}
         for i in range(self.num_moves):
             for k, v in self._generate_dummy_move().items():
-                vals[f"moves.{i}.{k}"] = v
+                vals[f"moves-{i}-{k}"] = v
         return vals
 
     def battle_to_tensor(self, battle):
@@ -239,7 +263,7 @@ class BattleConverter:
             for k, v in self._extract_poke(
                 pokemon, battle.opponent_active_pokemon.types
             ).items():
-                od[f"ours.{i}.{k}"] = v
+                od[f"ours-{i}-{k}"] = v
             counter += 1
         # while counter < 6:
         #    for k, v in self._generate_dummy_poke().items():
@@ -251,7 +275,7 @@ class BattleConverter:
             for k, v in self._extract_poke(
                 battle.opponent_active_pokemon, battle.active_pokemon.types
             ).items():
-                od[f"enemy.{i}.{k}"] = v
+                od[f"enemy-{i}-{k}"] = v
             counter += 1
         # while counter < 6:
         #    for k, v in self._generate_dummy_poke().items():

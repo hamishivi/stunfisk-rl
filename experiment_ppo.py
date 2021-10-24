@@ -1,8 +1,8 @@
 from yacs.config import CfgNode
 from config import cfg
 from poke_env.player.random_player import RandomPlayer
-from stable_baselines3 import DQN
-from maskable_dqn import MaskableDQNPolicy, MaskablePolicyFeatureExtractor
+from sb3_contrib import MaskablePPO
+from sb3_contrib.common.maskable.policies import MaskableMultiInputActorCriticPolicy
 from max_player import MaxDamagePlayer
 from rl_player import SimpleRLPlayer
 from battle_env import train, test
@@ -41,18 +41,15 @@ def train_and_test(
     env_player = SimpleRLPlayer(cfg, battle_format=battle_format, team=team)
     max_opponent = MaxDamagePlayer(battle_format=battle_format, team=enemy_team)
     rand_opponent = RandomPlayer(battle_format=battle_format, team=enemy_team)
-    model = DQN(
-        MaskableDQNPolicy,
+    model = MaskablePPO(
+        MaskableMultiInputActorCriticPolicy,
         env_player,
-        policy_kwargs=dict(
-            features_extractor_class=MaskablePolicyFeatureExtractor,
-        ),
-        learning_rate=cfg.DQN.LEARNING_RATE,
-        buffer_size=cfg.DQN.BUFFER_SIZE,
-        learning_starts=cfg.DQN.LEARNING_STARTS,
-        gamma=cfg.DQN.GAMMA,
+        #learning_rate=cfg.DQN.LEARNING_RATE,
+        #buffer_size=cfg.DQN.BUFFER_SIZE,
+        #learning_starts=cfg.DQN.LEARNING_STARTS,
+        #gamma=cfg.DQN.GAMMA,
         verbose=verbose,
-        tensorboard_log="./dqn_pokemon_tensorboard/",
+        #tensorboard_log="./dqn_pokemon_tensorboard/",
     )
     # train against both?
     if train_rand:

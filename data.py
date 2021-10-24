@@ -27,6 +27,16 @@ TYPES = {
     None: 18,
 }
 
-MOVE_CATS = {MoveCategory.PHYSICAL: 0, MoveCategory.SPECIAL: 1, MoveCategory.STATUS: 2}
+MOVE_CATS = {
+    MoveCategory.PHYSICAL: 0,
+    MoveCategory.SPECIAL: 1,
+    MoveCategory.STATUS: 2,
+    None: 3,
+}
 
-GENDERS = {PokemonGender.FEMALE: 0, PokemonGender.MALE: 1, PokemonGender.NEUTRAL: 2}
+GENDERS = {
+    PokemonGender.FEMALE: 0,
+    PokemonGender.MALE: 1,
+    PokemonGender.NEUTRAL: 2,
+    None: 3,
+}
