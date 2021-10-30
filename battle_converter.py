@@ -12,9 +12,7 @@ class BattleOptions:
     This helps us with configuring tensor creation via config
     """
 
-    def __init__(
-        self, name, lower_bound, upper_bound, shape, extract_func, active
-    ):
+    def __init__(self, name, lower_bound, upper_bound, shape, extract_func, active):
         self.name = name
         self.l = lower_bound
         self.u = upper_bound
@@ -69,7 +67,9 @@ class CategoricalBattleOption(BattleOptions):
         self.gym_space = spaces.Discrete(len(category_data))
 
     def extract(self, *args, **kwargs):
-        return self.e(*args, **kwargs) # the stable baselines prepro will one hot for us!
+        return self.e(
+            *args, **kwargs
+        )  # the stable baselines prepro will one hot for us!
         # return np.eye(len(self.cat))[x if x else self.cat[None]]
 
 
@@ -181,7 +181,7 @@ class BattleConverter:
         self.num_poke = cfg.BATTLE.TEAM.SIZE  # this will always be 6, basically
         # field/battle options - currently none but maybe will add field types in future
 
-    def get_observation_space(self):
+    def get_observation_space(self, add_action_mask=False, num_actions=0):
         # overall battle observation space. Currently,
         # will just do two pokemon: active opp, active ours.
         # eventually add teams.
@@ -194,15 +194,13 @@ class BattleConverter:
         for i in range(1):
             for k, v in self.get_pokemon_obs_dict().items():
                 od[f"enemy-{i}-{k}"] = v
+        if add_action_mask:
+            od["action_mask"] = spaces.Box(low=0, high=1, shape=(num_actions,))
         return spaces.Dict(od)
 
     def get_pokemon_obs_dict(self):
         # dict representing a single pokemon
-        od = {
-            m.name: m.space
-            for m in self.poke_feats
-            if m.active
-        }
+        od = {m.name: m.space for m in self.poke_feats if m.active}
         for i in range(self.num_moves):
             for k, v in self.get_move_obs_dict().items():
                 od[f"moves-{i}-{k}"] = v
@@ -210,11 +208,7 @@ class BattleConverter:
 
     def get_move_obs_dict(self):
         # dict representing a single move
-        return {
-            m.name: m.space
-            for m in self.move_feats
-            if m.active
-        }
+        return {m.name: m.space for m in self.move_feats if m.active}
 
     def _extract_move(self, move_obj, enemy_types):
         d = {

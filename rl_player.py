@@ -17,9 +17,12 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
         super().__init__(*args, **kwargs)
         self.cfg = cfg
         self.bc = BattleConverter(cfg)
-        self.observation_space = self.bc.get_observation_space()
-        self.action_box = spaces.Discrete(super().action_space[-1] + 1)
         self.action_mask_in_obs = True
+        self.observation_space = self.bc.get_observation_space(
+            add_action_mask=self.action_mask_in_obs,
+            num_actions=super().action_space[-1] + 1,
+        )
+        self.action_box = spaces.Discrete(super().action_space[-1] + 1)
 
     @property
     def action_space(self):
@@ -29,9 +32,10 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
         return self._action_to_move(action_index, battle)
 
     def embed_battle(self, battle):
+        res = self.bc.battle_to_tensor(battle)
         if self.action_mask_in_obs:
-            return spaces.Dict({"battle": self.bc.battle_to_tensor(battle), "action_mask": self.action_masks()})
-        return self.bc.battle_to_tensor(battle)
+            res["action_mask"] = self.action_masks(battle)
+        return res
 
     def compute_reward(self, battle) -> float:
         return self.reward_computing_helper(
@@ -44,7 +48,7 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
     # true if move is valid, false otherwise
     def isGen8ValidMove(self, action, battle):
         if action == -1:
-            return True # forfeit always valid
+            return True  # forfeit always valid
         elif (
             action < 4
             and action < len(battle.available_moves)
@@ -76,20 +80,21 @@ class SimpleRLPlayer(Gen8EnvSinglePlayer):
             return True
         else:
             return False
-    
-    def action_masks(self) -> np.ndarray:
-        # this is an expensive way to generate the mask but its conceptually simple: 
+
+    def action_masks(self, battle=None) -> np.ndarray:
+        # this is an expensive way to generate the mask but its conceptually simple:
         # test each action index for validity. we could construct the mask with a
         # cleverer func faster but idm slowness rn
         # one edge case: force switch with no pokemon to switch to. mask will be all 0s
         # this is weird anyway, will leave as a bug (lol)
         num_moves = super().action_space[-1] + 1
+        if battle is None:
+            battle = self._current_battle
         mask = np.ones(num_moves)
         for x in range(num_moves):
-            if not self.isGen8ValidMove(x, self._current_battle):
+            if not self.isGen8ValidMove(x, battle):
                 mask[x] = 0
         return mask
-
 
 
 # for playing against users
